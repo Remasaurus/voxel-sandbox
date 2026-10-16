@@ -10,7 +10,7 @@ public:
 
   void set_fov(float a_fov);
   void update_fov(float offset);
-  void set_render_dimensions(size_t width, size_t height);
+  void set_render_dimensions(float width, float height);
 
   glm::vec3 get_position() const;
   glm::vec3 get_look_direction() const;
@@ -42,5 +42,5 @@ private:
   float fov = 45.0f;
   float sensitivity = glm::radians(0.25f);
   float speed = 3.0f;
-  size_t render_width, render_height;
+  float render_width, render_height;
 };

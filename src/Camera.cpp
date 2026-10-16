@@ -31,7 +31,7 @@ void Camera::update_fov(float offset) {
     fov = FOV_MAX;
 }
 
-void Camera::set_render_dimensions(size_t width, size_t height) {
+void Camera::set_render_dimensions(float width, float height) {
   render_width = width;
   render_height = height;
 }
@@ -43,8 +43,7 @@ glm::mat4 Camera::get_view_matrix() const {
 }
 
 glm::mat4 Camera::get_projection_matrix() const {
-  return glm::perspective(glm::radians(fov),
-                          render_width / static_cast<float>(render_height),
+  return glm::perspective(glm::radians(fov), render_width / render_height,
                           NEAR_CLIP_PLANE, FAR_CLIP_PLANE);
   // if (orthographic_mode)
   // return glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
