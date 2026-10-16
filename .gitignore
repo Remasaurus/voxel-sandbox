@@ -1,3 +1,6 @@
+#Development environment specific files
+.vscode
+
 # Prerequisites
 *.d
 
