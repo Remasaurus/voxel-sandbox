@@ -10,7 +10,7 @@
     * [ ] fog
     * [ ] lighting for fire voxels
     * [ ] gas
-    * [ ] sun- sky cubemap
+    * [ ] sun- sky cubemap https://www.youtube.com/watch?v=zZzLlRyOnZ8
     * [ ] northern lights
     * [ ] water
 
