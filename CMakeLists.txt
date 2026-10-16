@@ -8,12 +8,29 @@ add_executable(${PROJECT_NAME})
 
 find_package(OpenGL REQUIRED)
 
+include(FetchContent)
+FetchContent_Declare(
+    glfw
+    GIT_REPOSITORY https://github.com/glfw/glfw
+    GIT_TAG 3.5.1
+)
+
+FetchContent_MakeAvailable(glfw)
+
 target_sources(${PROJECT_NAME}
 PRIVATE
 	./src/main.cpp
+
+    ./glad/src/gl.c
+)
+
+target_include_directories(${PROJECT_NAME}
+PRIVATE
+    ./glad/include
 )
 
 target_link_libraries(${PROJECT_NAME}
 PRIVATE
 	OpenGL::OpenGL
+    glfw
 )
