@@ -2,6 +2,7 @@
 #include <print>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#include "Log.h"
 
 
 static void error_callback(int error, const char* description)
@@ -52,9 +53,9 @@ int main(void)
     // Successfully loaded OpenGL
     printf("Loaded OpenGL %d.%d\n", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
 
-    std::println("OpenGL vendor: {}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
-    std::println("OpenGL renderer: {}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
-    std::println("OpenGL shading version: {}", reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION)));
+    Log::info("OpenGL vendor: {}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
+    Log::info("OpenGL renderer: {}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+    Log::info("OpenGL shading version: {}", reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION)));
 
 
     glfwSwapInterval(1);
