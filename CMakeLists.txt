@@ -14,8 +14,13 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/glfw/glfw
     GIT_TAG 3.5.1
 )
+FetchContent_Declare(
+    glm
+    GIT_REPOSITORY https://github.com/g-truc/glm
+    GIT_TAG 1.0.3
+)
 
-FetchContent_MakeAvailable(glfw)
+FetchContent_MakeAvailable(glfw glm)
 
 target_sources(${PROJECT_NAME}
 PRIVATE
