@@ -22,6 +22,14 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(glfw glm)
 
+if(MSVC)
+	target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+else()
+	target_compile_options(${PROJECT_NAME}
+		PRIVATE -Werror -pedantic-errors -Wall -Wextra -Wconversion -Wsign-conversion
+	)
+endif()
+
 target_sources(${PROJECT_NAME}
 PRIVATE
 	./src/main.cpp

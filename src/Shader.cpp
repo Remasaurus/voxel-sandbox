@@ -1,14 +1,15 @@
 #include "Shader.h"
-#include <glad/gl.h>
+#include "Log.h"
 #include <fstream>
+#include <glad/gl.h>
 #include <sstream>
 
-std::string read_file(const std::filesystem::path& path) {
+std::string read_file(const std::filesystem::path &path) {
     std::ifstream file;
 
     file.open(path.string());
-    if (!file.is_open) {
-        Log::error("Could not open {}", path); 
+    if (!file.is_open()) {
+        Log::error("Could not open {}", path.string());
         return "";
     }
 
@@ -20,17 +21,22 @@ std::string read_file(const std::filesystem::path& path) {
 void Shader::use() {
     if (!program) {
         Log::error("Tried using an undefined shader");
+		return;
     }
     glUseProgram(program);
 }
 
-
-
-void Shader::add_stage(const std::filesystem::path& path, unsigned shader_type) {
+void Shader::add_stage(
+    const std::filesystem::path &path, unsigned shader_type
+) {
     std::string code = read_file(path);
 
     unsigned shader = glCreateShader(shader_type);
-    glShaderSource(shader, 1, code.c_str(), NULL);
+
+    // Cannot take address of r-value,
+    // so we need to copy it to some variable.
+    const char *code_c_str = code.c_str();
+    glShaderSource(shader, 1, &code_c_str, NULL);
     glCompileShader(shader);
 
     int success;
@@ -38,7 +44,7 @@ void Shader::add_stage(const std::filesystem::path& path, unsigned shader_type) 
     if (!success) {
         char info_log[info_log_size];
         glGetShaderInfoLog(shader, info_log_size, NULL, info_log);
-        Log::error(info_log);
+        Log::error("{}", info_log);
     }
 
     if (!program) {
@@ -63,7 +69,7 @@ void Shader::link() {
         char info_log[info_log_size];
 
         glGetProgramInfoLog(program, info_log_size, NULL, info_log);
-        Log::error(info_log);
+        Log::error("{}", info_log);
     }
 }
 
@@ -73,16 +79,17 @@ void Shader::delete_program() {
     }
 }
 
-Shader::~Shader() {
-    delete_program();
-}
+Shader::~Shader() { delete_program(); }
 
-Shader(Shader&& other) {
+Shader::Shader(Shader &&other) {
     delete_program();
     program = other.program;
+	other.program = 0;
 }
 
-Shader operator=(Shader&&) {
+Shader& Shader::operator=(Shader &&other) {
     delete_program();
     program = other.program;
+	other.program = 0;
+	return *this;
 }
