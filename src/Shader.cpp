@@ -4,6 +4,7 @@
 #include <glad/gl.h>
 #include <sstream>
 
+namespace {
 std::string read_file(const std::filesystem::path &path) {
     std::ifstream file;
 
@@ -17,11 +18,12 @@ std::string read_file(const std::filesystem::path &path) {
     stream << file.rdbuf();
     return stream.str();
 }
+} // namespace
 
 void Shader::use() {
     if (!program) {
         Log::error("Tried using an undefined shader");
-		return;
+        return;
     }
     glUseProgram(program);
 }
@@ -84,12 +86,12 @@ Shader::~Shader() { delete_program(); }
 Shader::Shader(Shader &&other) {
     delete_program();
     program = other.program;
-	other.program = 0;
+    other.program = 0;
 }
 
-Shader& Shader::operator=(Shader &&other) {
+Shader &Shader::operator=(Shader &&other) {
     delete_program();
     program = other.program;
-	other.program = 0;
-	return *this;
+    other.program = 0;
+    return *this;
 }

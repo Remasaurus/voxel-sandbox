@@ -2,9 +2,11 @@
 #include "Log.h"
 
 #include <GLFW/glfw3.h>
-#include <print>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
-Application::Application() {}
+Application::Application() : renderer(window) {}
 
 Application::~Application() {}
 
@@ -30,15 +32,24 @@ int Application::run() {
     //     reinterpret_cast<const char
     //     *>(glGetString(GL_SHADING_LANGUAGE_VERSION))
     // );
-    window.make_current();
 
     while (!window.should_close()) {
-        window.swap_buffers();
         glfwPollEvents();
-        // TODO: update controls
-        // camera.update();
 
-        // renderer.render(camera);
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::ShowDemoWindow();
+
+        ImGui::EndFrame();
+        ImGui::Render();
+
+        renderer.render(camera);
+
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        window.swap_buffers();
     }
 
     return EXIT_SUCCESS;

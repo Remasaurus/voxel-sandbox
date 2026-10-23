@@ -3,10 +3,11 @@
 
 class Shader {
 public:
+    Shader() = default;
     Shader(Shader &&);
     Shader(const Shader &) = delete;
-    Shader& operator=(Shader &&);
-    Shader& operator=(const Shader &) = delete;
+    Shader &operator=(Shader &&);
+    Shader &operator=(const Shader &) = delete;
 
     void add_stage(const std::filesystem::path &path, unsigned shader_type);
 
