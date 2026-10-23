@@ -15,26 +15,6 @@ Application::~Application() {}
 
 int Application::run() {
 
-    // Successfully loaded OpenGL
-    // TODO: refactor startup logging
-    // std::println(
-    //     "Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version),
-    //     GLAD_VERSION_MINOR(version)
-    // );
-
-    // std::println(
-    //     "OpenGL vendor: {}",
-    //     reinterpret_cast<const char *>(glGetString(GL_VENDOR))
-    // );
-    // std::println(
-    //     "OpenGL renderer: {}",
-    //     reinterpret_cast<const char *>(glGetString(GL_RENDERER))
-    // );
-    // std::println(
-    //     "OpenGL shading version: {}",
-    //     reinterpret_cast<const char
-    //     *>(glGetString(GL_SHADING_LANGUAGE_VERSION))
-    // );
     Clock clock;
 
     while (!window.should_close()) {
