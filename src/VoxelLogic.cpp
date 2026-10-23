@@ -1,26 +1,56 @@
+#include "VoxelLogic.h"
 // Voxel logic: what should happen for every voxel in any situation
 
+// class stone
+void VoxelLogic::stone_logic(voxel &voxel) {
+    // fall down
+    if (grid[voxel.x, voxel.y - 1, voxel.z] == air) {
+        voxel.y -= 1;
+    }
+}
 
-enum VoxelType {
-    stone   = 0,
-    dirt    = 1,
-    grass   = 2,
-    sand    = 3,
-    air     = 4,
-    wood    = 5,
-    water   = 6,
-    fire    = 7,
-    steam   = 8,
-    snow    = 9 
-};
+// class dirt
+void VoxelLogic::dirt_logic(voxel &voxel) {
+    // fall down
+    if (grid[voxel.x, voxel.y - 1, voxel.z] == air) {
+        voxel.y -= 1;
+    }
+    // fall down in heap TODO how to fix this clunkyness?
+    // if (grid[voxel.x + 1, voxel.y - 1, voxel.z + 1] == air ||
+    //     grid[voxel.x - 1, voxel.y - 1, voxel.z + 1] == air || 
+    //     grid[voxel.x + 1, voxel.y - 1, voxel.z - 1] == air || 
+    //     grid[voxel.x - 1, voxel.y - 1, voxel.z - 1] == air || 
+    // ) {
+    //     voxel.y -= 1;
+    // }
+    // grow grass
+    if (grid[voxel.x + 1] == grass ||
+        grid[voxel.x - 1] == grass ||
+        grid[voxel.z + 1] == grass ||
+        grid[voxel.z - 1] == grass ||
+        ) 
+        // random chance of growing grass each tick
+        {
+            if (rand() % 10000000 < 1) // TODO: randomness aanpassen
+                voxel.type == grass;
+        }
+}
 
+// class grass
+void VoxelLogic::dirt_logic(voxel &voxel) {
+    // fall down
+    if (grid[voxel.y - 1] == air) {
+        voxel.y -= 1;
+    }
+}
 
-// // class stone
-// void VoxelLogic::stone_update(voxel &voxel) {
-//     if (grid[voxel.y - 1] == air) {
-//         voxel.y -= 1;
-//     }
-// }
+// class sand
+void VoxelLogic::dirt_logic(voxel &voxel) {
+    // fall down
+    if (grid[voxel.y - 1] == air) {
+        voxel.y -= 1;
+    }
+}
 
 // steen
 // - aarde
