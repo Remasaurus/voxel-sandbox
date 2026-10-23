@@ -1,10 +1,13 @@
 #include "Application.h"
+#include "Clock.h"
 #include "Log.h"
 
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+
+using namespace std::chrono_literals;
 
 Application::Application() : renderer(window) {}
 
@@ -32,8 +35,10 @@ int Application::run() {
     //     reinterpret_cast<const char
     //     *>(glGetString(GL_SHADING_LANGUAGE_VERSION))
     // );
+    Clock clock;
 
     while (!window.should_close()) {
+        clock.tick(1s / 60);
         glfwPollEvents();
 
         ImGui_ImplOpenGL3_NewFrame();

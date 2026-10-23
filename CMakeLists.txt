@@ -94,6 +94,7 @@ target_sources(
         ./src/Renderer.cpp
         ./src/Shader.cpp
         ./src/VoxelLogic.cpp
+        ./src/Clock.cpp
         ./glad/src/gl.c
 )
 
