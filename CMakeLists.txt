@@ -19,8 +19,13 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/g-truc/glm
     GIT_TAG 1.0.3
 )
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui
+    GIT_TAG v1.93.0
+)
 
-FetchContent_MakeAvailable(glfw glm)
+FetchContent_MakeAvailable(glfw glm imgui)
 
 if(MSVC)
 	target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
@@ -51,5 +56,6 @@ target_link_libraries(${PROJECT_NAME}
 PRIVATE
 	OpenGL::OpenGL
     glfw
-    glm
+	glm
+	imgui
 )
