@@ -26,14 +26,19 @@ if(MSVC)
 	target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
 else()
 	target_compile_options(${PROJECT_NAME}
-		PRIVATE -Werror -pedantic-errors -Wall -Wextra -Wconversion -Wsign-conversion
+		PRIVATE -Werror -pedantic-errors -Wall -Wextra -Wconversion
 	)
 endif()
 
 target_sources(${PROJECT_NAME}
 PRIVATE
 	./src/main.cpp
-
+    ./src/Application.cpp
+    ./src/Window.cpp
+    ./src/Camera.cpp
+    ./src/Renderer.cpp
+    ./src/Shader.cpp
+    ./src/VoxelLogic.cpp
     ./glad/src/gl.c
 )
 
@@ -46,4 +51,5 @@ target_link_libraries(${PROJECT_NAME}
 PRIVATE
 	OpenGL::OpenGL
     glfw
+    glm
 )

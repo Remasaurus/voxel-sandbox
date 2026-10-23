@@ -5,6 +5,7 @@
 
 class Camera {
 public:
+  Camera() = default;
   Camera(const glm::vec3 &cam_pos, const glm::vec3 &cam_target,
          const glm::vec2 &render_dimensions);
 
