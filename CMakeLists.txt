@@ -57,5 +57,4 @@ PRIVATE
 	OpenGL::OpenGL
     glfw
 	glm
-	imgui
 )
