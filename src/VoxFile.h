@@ -1,10 +1,9 @@
-#include <cstdint>
-#include <array>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string_view>
 #include <vector>
+#include <memory>
 
 // ref: https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox.txt
 
@@ -73,8 +72,6 @@ struct Model {
 int load_vox_file(std::filesystem::path file_path) {
     // check if file exists 
     // check if using .vox
-    
-
     // load file
     std::ifstream file {file_path, std::ios::binary};
     if(!file) {
@@ -89,30 +86,27 @@ int load_vox_file(std::filesystem::path file_path) {
     file.close();
     
     size_t offset = 0;
-    Header header{};
-    std::memcpy( &header,file_buffer.data(),sizeof(Header));
-    auto magic = std::string_view(header.magic, sizeof(header.magic));
+    const Header* header = std::start_lifetime_as<Header>(file_buffer.data());
+    auto magic = std::string_view(header->magic, sizeof(header->magic));
     
     if(magic != "VOX "){
         std::cout << "This is not a .vox file \n";
         return -1;
     }
 
-    std::cout << ".vox file version: " << header.version << "\n";
+    std::cout << ".vox file version: " << header->version << "\n";
     offset += sizeof(Header);
 
-    Chunk main_chunk{};
-    std::memcpy(&main_chunk, file_buffer.data() + offset, sizeof(Chunk));
-    auto chunk_id = std::string_view(main_chunk.chunk_id, sizeof(main_chunk.chunk_id));
-    std::cout << chunk_id << ", " << main_chunk.n_bytes_chunk <<  ", " << main_chunk.n_bytes_children<<std::endl;
+    const Chunk* main_chunk = std::start_lifetime_as<Chunk>(file_buffer.data()+offset);
+    auto chunk_id = std::string_view(main_chunk->chunk_id, sizeof(main_chunk->chunk_id));
+    std::cout << chunk_id << ", " << main_chunk->n_bytes_chunk <<  ", " << main_chunk->n_bytes_children<<std::endl;
     offset += sizeof(Chunk);
 
-    const size_t end = main_chunk.n_bytes_children + offset;
+    const size_t end = main_chunk->n_bytes_children + offset;
 
     while (offset +sizeof(Chunk) < end) {
-        Chunk new_chunk{};
-        std::memcpy(&new_chunk, file_buffer.data() + offset, sizeof(Chunk));
-        auto new_chunk_id = std::string_view(new_chunk.chunk_id, sizeof(new_chunk.chunk_id));
+        const Chunk* new_chunk = std::start_lifetime_as<Chunk>(file_buffer.data()+offset); ;
+        auto new_chunk_id = std::string_view(new_chunk->chunk_id, sizeof(new_chunk->chunk_id));
 
         if(new_chunk_id == "PACK") {
             std::cout << new_chunk_id  << "\n";
@@ -121,9 +115,8 @@ int load_vox_file(std::filesystem::path file_path) {
 
         }
         std::cout << new_chunk_id  << "\n";
-        offset += sizeof(Chunk) + new_chunk.n_bytes_chunk + new_chunk.n_bytes_children;
+        offset += sizeof(Chunk) + new_chunk->n_bytes_chunk + new_chunk->n_bytes_children;
     }
 
     return 0;
 }
-
