@@ -4,11 +4,14 @@
 
 Clock::Clock() { last = std::chrono::high_resolution_clock::now(); }
 
-void Clock::tick(duration time) {
+void Clock::tick(Duration time) {
     auto next = last + time;
     auto now = std::chrono::high_resolution_clock::now();
-    if (next > now)
+    if (now > next) {
+		last = now;
         return;
+	}
 
     std::this_thread::sleep_until(next);
+	last = std::chrono::high_resolution_clock::now();;
 }
