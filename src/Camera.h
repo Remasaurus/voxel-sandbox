@@ -21,6 +21,8 @@ public:
   void handle_movement(const glm::vec3 &move_input, float deltatime);
   void handle_rotation(const glm::vec2 &rotation_offset);
 
+  float fov = 45.0f;
+
 private:
 
   // Constants 
@@ -40,7 +42,6 @@ private:
 
   glm::vec2 rotation = glm::vec2(-90.0f, 0.0f);
 
-  float fov = 45.0f;
   float sensitivity = glm::radians(0.25f);
   float speed = 3.0f;
   float render_width, render_height;

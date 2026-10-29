@@ -1,5 +1,6 @@
 #include "Window.h"
 #include "Log.h"
+#include <GLFW/glfw3.h>
 
 namespace {
 void error_callback(int error, const char *description) {
@@ -7,15 +8,22 @@ void error_callback(int error, const char *description) {
 }
 } // namespace
 
+
+void Window::cursor_pos_callback(GLFWwindow *window, double xpos, double ypos) {
+    Window *wnd = static_cast<Window *>(glfwGetWindowUserPointer(window));
+    for (auto& callback : wnd->on_mouse_moves) {
+        callback(xpos - wnd->old_xpos, ypos - wnd->old_ypos);
+    }
+    wnd->old_xpos = xpos;
+    wnd->old_ypos = ypos;
+}
+
 void Window::key_callback(
     GLFWwindow *window, int key, int scancode, int action, int mods
 ) {
 
     (void)scancode;
     (void)mods;
-
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
 
     Window *wnd = static_cast<Window *>(glfwGetWindowUserPointer(window));
     if (!wnd)
@@ -52,6 +60,29 @@ void Window::on_keyup(int key, std::function<void()> &&f) {
     on_keyups[key].push_back(std::move(f));
 }
 
+void Window::on_mouse_move(std::function<void (double, double)> &&f) {
+    on_mouse_moves.push_back(std::move(f));
+}
+
+void Window::capture_mouse(bool capture) {
+    if (capture) {
+        if (glfwRawMouseMotionSupported()) {
+            glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+        }
+        glfwSetCursor(window, NULL);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    } else {
+        if (glfwRawMouseMotionSupported()) {
+            glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
+        }
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+}
+
+void Window::request_close() {
+    glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
 Window::Window() {
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -67,13 +98,11 @@ Window::Window() {
 
     glfwSetWindowUserPointer(window, this);
 
-    window = glfwCreateWindow(640, 480, "Voxel Sandbox", NULL, NULL);
-    if (!window) {
-        Log::error("Unable to create GLFW window");
-        return;
-    }
-
     glfwSetKeyCallback(window, key_callback);
+    glfwGetCursorPos(window, &old_xpos, &old_ypos);
+    glfwSetCursorPosCallback(window, cursor_pos_callback);
+
+    Log::info("Raw mouse motion support: {}", glfwRawMouseMotionSupported());
 }
 
 Window::~Window() { glfwDestroyWindow(window); }
