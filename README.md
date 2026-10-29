@@ -7,7 +7,7 @@ Sanbox with voxels that follow automaton logic
 ```shell
 mkdir build
 cd build
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Release # For release mode. Default is Debug
 make -j
 ```
 
