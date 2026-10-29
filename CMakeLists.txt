@@ -55,7 +55,7 @@ if(MSVC)
 else()
     target_compile_options(
         ${PROJECT_NAME}
-        PRIVATE
+        PRIVATE $<$<COMPILE_LANGUAGE:CXX>:
             -pedantic
             -Wall
             -Wextra
@@ -76,11 +76,24 @@ else()
             -Wsign-conversion
             -Wsign-promo
             -Wstrict-null-sentinel
-            -Wstrict-overflow=5
+            -Wstrict-overflow=2
             -Wswitch-default
             -Wundef
             -Werror
             -Wno-unused
+        >
+    )
+    add_compile_options(
+        # Debug mode
+        $<$<CONFIG:Debug>:
+            -fsanitize=address
+            -static-libasan
+        >
+        # Release mode
+        $<$<NOT:$<CONFIG:Debug>>:
+            -march=native
+            -mtune=native
+        >
     )
 endif()
 
