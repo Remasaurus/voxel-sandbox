@@ -8,10 +8,9 @@ void error_callback(int error, const char *description) {
 }
 } // namespace
 
-
 void Window::cursor_pos_callback(GLFWwindow *window, double xpos, double ypos) {
     Window *wnd = static_cast<Window *>(glfwGetWindowUserPointer(window));
-    for (auto& callback : wnd->on_mouse_moves) {
+    for (auto &callback : wnd->on_mouse_moves) {
         callback(xpos - wnd->old_xpos, ypos - wnd->old_ypos);
     }
     wnd->old_xpos = xpos;
@@ -60,7 +59,7 @@ void Window::on_keyup(int key, std::function<void()> &&f) {
     on_keyups[key].push_back(std::move(f));
 }
 
-void Window::on_mouse_move(std::function<void (double, double)> &&f) {
+void Window::on_mouse_move(std::function<void(double, double)> &&f) {
     on_mouse_moves.push_back(std::move(f));
 }
 
@@ -79,9 +78,7 @@ void Window::capture_mouse(bool capture) {
     }
 }
 
-void Window::request_close() {
-    glfwSetWindowShouldClose(window, GLFW_TRUE);
-}
+void Window::request_close() { glfwSetWindowShouldClose(window, GLFW_TRUE); }
 
 Window::Window() {
 

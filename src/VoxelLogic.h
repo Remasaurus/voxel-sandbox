@@ -26,7 +26,8 @@
 //     void stone_logic(voxel &voxel);
 
 // public:
-//     std::vector < std::vector >> grid; // TODO iew dit moeten we wel aanpassen
+//     std::vector < std::vector >> grid; // TODO iew dit moeten we wel
+//     aanpassen
 
 //     VoxelLogic(/* args */);
 //     ~VoxelLogic();
