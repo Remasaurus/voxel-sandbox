@@ -1,4 +1,16 @@
+cmake_minimum_required(VERSION 3.25)
+project(voxel-sandbox LANGUAGES CXX C)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_STANDARD 23)
+
+add_executable(${PROJECT_NAME})
+
+find_package(OpenGL REQUIRED)
+
+include(FetchContent)
+FetchContent_Declare(
+    glfw
     GIT_REPOSITORY https://github.com/glfw/glfw
     GIT_TAG 3.5.1
     SYSTEM
@@ -97,7 +109,7 @@ target_sources(
         ./src/VoxelLogic.cpp
         ./src/Clock.cpp
         ./glad/src/gl.c
-        ./src/VoxelFileParser.cpp
+        ./src/VoxFileParser.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ./glad/include)
