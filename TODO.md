@@ -7,6 +7,7 @@
 * [ ] sound support
 * [ ] voxel textures
 * [ ] shaders for ...
+    * [ ] skybox -> Lianne
     * [ ] fog
     * [ ] lighting for fire voxels
     * [ ] gas
