@@ -78,7 +78,12 @@ int Application::run() {
         before = std::chrono::high_resolution_clock::now();
         clock.tick(frametime);
         after = std::chrono::high_resolution_clock::now();
+        auto waiting = after - before;
+
+        before = std::chrono::high_resolution_clock::now();
         glfwPollEvents();
+        after = std::chrono::high_resolution_clock::now();
+        auto updating = after - before;
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -127,6 +132,12 @@ int Application::run() {
         ImGui::Text("Frame: %.2fms (%.1f FPS)", 1000.0 / framerate, framerate);
         ImGui::Text(
             "Waiting: %.2fms",
+            std::chrono::duration_cast<
+                std::chrono::duration<double, std::milli>>(waiting)
+                .count()
+        );
+        ImGui::Text(
+            "Updating: %.2fms",
             std::chrono::duration_cast<
                 std::chrono::duration<double, std::milli>>(after - before)
                 .count()
