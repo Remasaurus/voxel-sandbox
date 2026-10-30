@@ -2,6 +2,7 @@
 
 #include "Camera.h"
 #include "Renderer.h"
+#include "VoxelMap.h"
 #include "Window.h"
 
 class Application {
@@ -21,4 +22,5 @@ private:
     Camera camera;
     Window window;
     Renderer renderer;
+    VoxelMap voxel_map;
 };

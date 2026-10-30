@@ -3,6 +3,7 @@
 #include "Application.h"
 #include "Clock.h"
 #include "Log.h"
+#include "Renderer.h"
 #include <chrono>
 
 #include <GLFW/glfw3.h>
@@ -38,6 +39,8 @@ Application::Application() {
     ImGui_ImplGlfw_InitForOpenGL(window.get(), true);
     ImGui_ImplOpenGL3_Init(nullptr);
 
+    enable_opengl_debug();
+
     IMGUI_CHECKVERSION();
     window.on_keydown('W', [this]() {
         Log::info("Moving forward");
@@ -52,8 +55,9 @@ Application::Application() {
     window.capture_mouse();
 
     window.on_mouse_move([this](double dx, double dy) {
-        camera.rotate(glm::vec2(dx, dy) * (rotation_speed * 0.01f));
-        Log::info("Mouse moved ({}, {})", camera.rotation.x, camera.rotation.y);
+        if (show_settings) {
+            camera.rotate(glm::vec2(dx, dy) * (rotation_speed * 0.01f));
+        }
     });
 }
 

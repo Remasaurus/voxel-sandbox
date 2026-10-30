@@ -2,13 +2,14 @@
 
 #include "Camera.h"
 
+void enable_opengl_debug();
+
 class Renderer {
 public:
     Renderer();
     ~Renderer();
 
     void render(const Camera &camera) const;
-
     int render_distance = 100;
     int light_bounces = 2;
     bool heatmap = false;

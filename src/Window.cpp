@@ -84,6 +84,7 @@ Window::Window() {
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
 
     glfwSetErrorCallback(error_callback);
 
@@ -99,7 +100,7 @@ Window::Window() {
     glfwGetCursorPos(window, &old_xpos, &old_ypos);
     glfwSetCursorPosCallback(window, cursor_pos_callback);
 
-    Log::info("Raw mouse motion support: {}", glfwRawMouseMotionSupported());
+    Log::info("Raw mouse motion support: {}", !!glfwRawMouseMotionSupported());
 }
 
 Window::~Window() { glfwDestroyWindow(window); }
