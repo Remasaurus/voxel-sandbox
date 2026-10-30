@@ -25,6 +25,9 @@
       libxi
       libxinerama
       libGL
+      libGLX
+      libglvnd
+      mesa
 
       glfw
       glm
