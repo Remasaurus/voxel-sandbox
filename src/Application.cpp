@@ -39,7 +39,10 @@ Application::Application() {
     ImGui_ImplOpenGL3_Init(nullptr);
 
     IMGUI_CHECKVERSION();
-    window.on_keydown('W', []() { Log::info("Moving forward"); });
+    window.on_keydown('W', [this]() {
+        Log::info("Moving forward");
+        camera.position += camera.front * movement_speed;
+    });
 
     window.on_keydown(GLFW_KEY_ESCAPE, [this]() {
         show_settings = !show_settings;
@@ -48,8 +51,9 @@ Application::Application() {
 
     window.capture_mouse();
 
-    window.on_mouse_move([](double dx, double dy) {
-        Log::info("Mouse moved ({}, {})", dx, dy);
+    window.on_mouse_move([this](double dx, double dy) {
+        camera.rotate(glm::vec2(dx, dy) * (rotation_speed * 0.01f));
+        Log::info("Mouse moved ({}, {})", camera.rotation.x, camera.rotation.y);
     });
 }
 
