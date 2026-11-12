@@ -74,8 +74,8 @@ target_sources(
         src/Shader.cpp
         src/VoxelLogic.cpp
         src/Clock.cpp
-        # ./src/VoxelMap.cpp
         src/VoxFileParser.cpp
+        src/VoxelMap.cpp
         glad/src/gl.c
 )
 
