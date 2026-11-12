@@ -1,11 +1,18 @@
 cmake_minimum_required(VERSION 3.25)
-project(voxel-sandbox LANGUAGES CXX C)
+project(voxel-sandbox 
+    VERSION 1.0
+    LANGUAGES CXX C
+)
+
+set(CMAKE_CXX_STANDARD 23)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_STANDARD 23)
 
 add_executable(${PROJECT_NAME})
 
+#
+# Depedencies
+#
 find_package(OpenGL REQUIRED)
 
 include(FetchContent)
@@ -30,16 +37,19 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(glfw glm imgui)
 
+#
+# Dear ImGui
+#
 add_library(imgui STATIC)
 
-target_include_directories(
-    imgui
+target_include_directories(imgui
     SYSTEM
-    PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends
+    PUBLIC 
+        ${imgui_SOURCE_DIR}
+        ${imgui_SOURCE_DIR}/backends
 )
 
-target_sources(
-    imgui
+target_sources(imgui
     PRIVATE
         ${imgui_SOURCE_DIR}/imgui.cpp
         ${imgui_SOURCE_DIR}/imgui_demo.cpp
@@ -50,68 +60,121 @@ target_sources(
         ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
 )
 
+#
+# Executable
+#
+target_sources(
+    ${PROJECT_NAME}
+    PRIVATE
+        src/main.cpp
+        src/Application.cpp
+        src/Window.cpp
+        src/Camera.cpp
+        src/Renderer.cpp
+        src/Shader.cpp
+        src/VoxelLogic.cpp
+        src/Clock.cpp
+        # ./src/VoxelMap.cpp
+        src/VoxFileParser.cpp
+        glad/src/gl.c
+)
+
+target_include_directories(${PROJECT_NAME}
+    PRIVATE
+        glad/include
+)
+
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+        OpenGL::OpenGL
+        glfw
+        glm
+        imgui
+)
+
+#
+# Add warnings
+#
 if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+    target_compile_options(${PROJECT_NAME} 
+        PRIVATE 
+            /W4
+            /WX
+            /permissive-
+    )
 else()
     target_compile_options(
         ${PROJECT_NAME}
-        PRIVATE $<$<COMPILE_LANGUAGE:CXX>:
+        PRIVATE 
             -pedantic
             -Wall
             -Wextra
             -Wcast-align
             -Wcast-qual
-            -Wctor-dtor-privacy
+            $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
             -Wdisabled-optimization
             -Wformat=2
             -Winit-self
             -Wlogical-op
             -Wmissing-declarations
             -Wmissing-include-dirs
-            -Wnoexcept
-            -Wold-style-cast
-            -Woverloaded-virtual
+            $<$<COMPILE_LANGUAGE:CXX>:-Wnoexcept>
+            $<$<COMPILE_LANGUAGE:CXX>:-Wold-style-cast>
+            $<$<COMPILE_LANGUAGE:CXX>:-Woverloaded-virtual>
             -Wredundant-decls
             -Wshadow
             -Wsign-conversion
-            -Wsign-promo
-            -Wstrict-null-sentinel
+            $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+            $<$<COMPILE_LANGUAGE:CXX>:-Wstrict-null-sentinel>
             -Wstrict-overflow=2
             -Wswitch-default
             -Wundef
             -Werror
             -Wno-unused
-        >
-    )
-    add_compile_options(
-        # Debug mode
-        $<$<CONFIG:Debug>:
-            -fsanitize=address
-            -static-libasan
-        >
-        # Release mode
-        $<$<NOT:$<CONFIG:Debug>>:
-            -march=native
-            -mtune=native
-        >
     )
 endif()
 
-target_sources(
-    ${PROJECT_NAME}
-    PRIVATE
-        ./src/main.cpp
-        ./src/Application.cpp
-        ./src/Window.cpp
-        ./src/Camera.cpp
-        ./src/Renderer.cpp
-        ./src/Shader.cpp
-        ./src/VoxelLogic.cpp
-        ./src/Clock.cpp
-        ./glad/src/gl.c
-        ./src/VoxFileParser.cpp
+#
+# Debug
+#
+add_compile_options(
+    $<$<CONFIG:Debug>:-g>
+    $<$<CONFIG:Debug>:-fsanitize=address>
+    $<$<CONFIG:Debug>:-fsanitize=undefined>
+    $<$<CONFIG:Debug>:-fno-omit-frame-pointer>
+)
+add_link_options(
+    $<$<CONFIG:Debug>:-fsanitize=address,undefined>
+)
+add_compile_definitions(
+    $<$<CONFIG:Debug>:_GLIBCXX_ASSERTIONS>
+    $<$<CONFIG:Debug>:_GLIBCXX_DEBUG>
+    $<$<CONFIG:Debug>:_GLIBCXX_DEBUG_PEDANTIC>
+    # $<$<CONFIG:Debug>:_GLIBCXX_DEBUG_BACKTRACE>
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE ./glad/include)
+#
+# Release
+#
+add_compile_options(
+    # Release mode
+    $<$<NOT:$<CONFIG:Debug>>:-march=native>
+    $<$<NOT:$<CONFIG:Debug>>:-mtune=native>
+)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::OpenGL glfw glm imgui)
+include(CheckIPOSupported)
+check_ipo_supported(
+    RESULT ipo_supported
+    OUTPUT ipo_error
+    LANGUAGES CXX
+)
+
+if(ipo_supported)
+    message(STATUS "IPO/LTO enabled")
+    set_property(
+        TARGET ${PROJECT_NAME}
+        PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
+    )
+else()
+    message(STATUS "IPO/LTO not supported: ${ipo_error}")
+endif()
