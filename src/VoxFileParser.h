@@ -4,6 +4,7 @@
 #include <expected>
 #include <filesystem>
 #include <vector>
+#include "VoxelMap.h"
 
 struct Header {
     char magic[4];
@@ -23,6 +24,7 @@ struct Color {
     uint8_t blue;
     uint8_t alpha;
 };
+
 static constexpr std::array<Color, 256> default_palette = {
     0x00000000, 0xffffffff, 0xffccffff, 0xff99ffff, 0xff66ffff, 0xff33ffff,
     0xff00ffff, 0xffffccff, 0xffccccff, 0xff99ccff, 0xff66ccff, 0xff33ccff,
@@ -77,11 +79,18 @@ struct Chunk {
     // chunkData
 };
 
-struct Voxel {
+struct VoxVoxel {
     uint8_t x;
     uint8_t y;
     uint8_t z;
     uint8_t color_index;
+
+    std::pair<Voxel, size_t> to_voxel(const std::array<Voxel, 256> &voxel_palette, size_t width, size_t height
+    ) {
+        Voxel voxel = voxel_palette[color_index];
+        size_t index = x + y * width + z * (width * height);
+        return {voxel, index};
+    }
 };
 
 struct Size {
@@ -91,10 +100,15 @@ struct Size {
 };
 
 struct Model {
-    std::vector<Voxel> voxels;
+    std::vector<VoxVoxel> voxels;
     std::array<Color, 256> palette = default_palette;
     Size bounds;
 };
+
+static_assert(std::endian::native == std::endian::little);
+static_assert(sizeof(Header) == 8);
+static_assert(sizeof(Chunk) == 12);
+
 
 enum class parse_error {
     could_not_open_file,
@@ -102,6 +116,5 @@ enum class parse_error {
     does_not_start_with_main_chunk,
     main_chunk_has_bytes
 };
-
 std::expected<std::vector<Model>, parse_error>
-    parse_vox_file(std::filesystem::path file_path);
+    parse_vox_file(std::filesystem::path file_path, const std::array<Voxel, 256>& voxel_palette);

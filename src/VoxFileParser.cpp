@@ -1,32 +1,56 @@
 #include "VoxFileParser.h"
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <string_view>
 
 namespace {
-std::vector<Voxel>
+
+std::vector<VoxVoxel>
     parse_voxels(size_t offset, const std::vector<std::byte> &file_buffer) {
-    uint32_t n_voxels =
-        *std::start_lifetime_as<uint32_t>(file_buffer.data() + offset);
+    uint32_t n_voxels{};
+    std::memcpy(&n_voxels, file_buffer.data() + offset, sizeof(uint32_t));
+
     offset += sizeof(uint32_t);
-    std::vector<Voxel> output;
+    std::vector<VoxVoxel> output;
     output.reserve(n_voxels);
     for (size_t i = 0; i < n_voxels; i++) {
-        size_t vox_offset = offset + i * sizeof(Voxel);
+        size_t vox_offset = offset + i * sizeof(VoxVoxel);
         output.emplace_back(
-            *std::start_lifetime_as<Voxel>(file_buffer.data() + vox_offset)
+            *std::start_lifetime_as<VoxVoxel>(file_buffer.data() + vox_offset)
         );
     }
+    return output;
+}
+
+std::vector<Voxel> parse_voxels_new(
+    size_t offset, const std::vector<std::byte> &file_buffer,
+    const std::array<Voxel, 256> &voxel_palette, size_t size, size_t width, size_t height
+) {
+    uint32_t n_voxels{};
+    std::memcpy(&n_voxels, file_buffer.data() + offset, sizeof(uint32_t));
+
+    offset += sizeof(uint32_t);
+    std::vector<Voxel> output{size, Voxel{}};
+
+    for (size_t i = 0; i < n_voxels; i++) {
+        size_t vox_offset = offset + i * sizeof(VoxVoxel);
+        VoxVoxel vox_voxel {};
+        std::memcpy(&vox_voxel, file_buffer.data() + vox_offset, sizeof(VoxVoxel));
+        std::pair<Voxel, size_t> voxel_index_pair = vox_voxel.to_voxel(voxel_palette,  width, height);
+
+        output[voxel_index_pair.second] = voxel_index_pair.first;
+    }
+
     return output;
 }
 
 } // namespace
 
 std::expected<std::vector<Model>, parse_error>
-    parse_vox_file(std::filesystem::path file_path) {
+    parse_vox_file(std::filesystem::path file_path, const std::array<Voxel, 256>& voxel_palette) {
     if (file_path.extension() != ".vox") {
-        // TODO LOG
         Log::error(
             "expected .vox file, found: {}", file_path.extension().string()
         );
@@ -89,6 +113,11 @@ std::expected<std::vector<Model>, parse_error>
         } else if (chunk_id == "XYZI") {
             output.back().voxels =
                 parse_voxels(offset + sizeof(Chunk), file_buffer);
+                auto& model_size = output.back().bounds;
+                size_t size = model_size.x * model_size.y * model_size.z;
+                //TODO WIP
+                parse_voxels_new(offset + sizeof(Chunk), file_buffer, voxel_palette, size, model_size.x, model_size.y);
+
         } else if (chunk_id == "RGBA") {
             Log::info("File has custom RGBA pallet (ignored)");
         }
