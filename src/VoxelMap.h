@@ -7,8 +7,29 @@
 #include <optional>
 #include <vector>
 
+enum class Material : std::uint8_t {
+    Air,
+
+    // Solids
+    Wood,
+    Leaf,
+
+    // Powders
+    Sand,
+
+    // Fluids
+    Water,
+
+    // Gas
+    Steam,
+};
+
 struct Voxel {
     std::uint8_t data;
+
+    bool isAir() {
+        return data == 0;
+    }
 };
 
 template<size_t Shift>
