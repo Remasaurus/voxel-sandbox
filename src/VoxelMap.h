@@ -30,7 +30,8 @@ struct Voxel {
     bool isAir() { return data == 0; }
 };
 
-template <size_t Shift> struct BitIndexer {
+template <size_t Shift>
+struct BitIndexer {
 
     static constexpr int shift = Shift;
     static constexpr int mask = (1 << shift) - 1;
@@ -38,12 +39,14 @@ template <size_t Shift> struct BitIndexer {
     static constexpr int max_area = max_length * max_length;
     static constexpr int max_volume = max_area * max_length;
 
-    template <typename T> static constexpr T to_index(T x, T y, T z) {
+    template <typename T>
+    static constexpr T to_index(T x, T y, T z) {
         // x + y * max_length + z * max_area but with correct bitshifting
         return (x & mask) | ((y & mask) << shift) | ((z & mask) << shift * 2);
     }
 
-    template <typename T> static constexpr T to_index(glm::vec<3, T> vec) {
+    template <typename T>
+    static constexpr T to_index(glm::vec<3, T> vec) {
         return to_index<T>(vec.x, vec.y, vec.z);
     }
 };
