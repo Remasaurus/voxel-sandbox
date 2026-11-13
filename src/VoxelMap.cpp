@@ -60,57 +60,64 @@ int VoxelMap::step_level(const glm::ivec3 &pos) {
 
 std::optional<HitResult>
     VoxelMap::raycast(glm::dvec3 origin, glm::dvec3 dir, double max_distance) {
+
+    // Let pos be current voxel position of ray
+    // if pos is x than ray_i in [ pos_i, pos_i + 1),
+    // so next voxel boundary is pos + step.
+    //
+    // Ray is given by P(t) = origin + t * dir
+    //
+    // target = pos + step
+    // Find ts such that P(ts_i)_i = target_i.
+    // origin_i + ts_i * dir_i = target_i
+    // ts_i = (target_i - origin_i) / dir_i
+    // ts = (target - origin) / dir
+    //
+    // Grab smallest t = min(ts_1, ...)
+    //
+    // P(t) is now exactly at boundary of new voxel
+    // For floating point error we add 0.0001, so it crosses the boundary
+    //
+    // hit_pos = P(t) = origin + t * dir
+    // pos = floor(hit_pos)
+    //
+    // Optimizations:
+    // - ts = (target - origin) / dir = pos / dir + step / dir - origin / dir.
+    //   We can precompute (step - origin) / dir = t_start.
+    //   Now ts = pos / dir + t_start
+    //
+    // - Multiplication is faster than division, so precompute inv_dir = 1/dir
+
     glm::dvec3 inv_dir = 1.0 / dir;
-    // P(t) = origin + t * dir
-    // t = (P(t) - origin) / dir
-    // t_start * dir = vec(origin to step)
-    glm::dvec3 t_start = (glm::step(0.0, dir) - origin) * inv_dir;
     glm::ivec3 pos = glm::floor(origin);
+    glm::dvec3 t_start = (glm::step(0.0, dir) - origin) * inv_dir;
+
     double max_distance_sq = max_distance * max_distance;
-
-    glm::dvec3 max_pos = origin + glm::normalize(dir) * max_distance;
-
-    // origin + t * dir = pos + step
-    // t = (pos - origin + step) / dir
-    // t = (step - origin) / dir + pos / dir
-    // t = t_start + pos / dir
+    double t_max = max_distance / glm::length(dir);
 
     bool within_distance = true;
     while (within_distance) {
-        // pos / dir
-        glm::dvec3 nearest = t_start + glm::dvec3(pos) * inv_dir;
-        nearest.x = dir.x == 0.0 ? std::numeric_limits<double>::infinity()
-                                 : t_start.x + pos.x * inv_dir.x;
-        nearest.y = dir.y == 0.0 ? std::numeric_limits<double>::infinity()
-                                 : t_start.y + pos.y * inv_dir.y;
-        nearest.z = dir.z == 0.0 ? std::numeric_limits<double>::infinity()
-                                 : t_start.z + pos.z * inv_dir.z;
+        glm::dvec3 ts;
+        ts.x = dir.x == 0.0 ? std::numeric_limits<double>::infinity()
+                            : t_start.x + pos.x * inv_dir.x;
+        ts.y = dir.y == 0.0 ? std::numeric_limits<double>::infinity()
+                            : t_start.y + pos.y * inv_dir.y;
+        ts.z = dir.z == 0.0 ? std::numeric_limits<double>::infinity()
+                            : t_start.z + pos.z * inv_dir.z;
 
-        double min =
-            std::min(std::min(nearest.x, nearest.y), nearest.z) + 0.0001;
+        double t = std::min({ts.x, ts.y, ts.z}) + 0.0001;
 
-        glm::dvec3 hit_pos = origin + min * dir;
-
-        if (hit_pos.x > max_pos.x || hit_pos.y > max_pos.y ||
-            hit_pos.z > max_pos.z) {
+        if (t > t_max) {
             within_distance = false;
-            pos = glm::floor(max_pos);
-        } else {
-            pos = glm::floor(hit_pos);
+            t = t_max;
         }
 
+        glm::dvec3 hit_pos = origin + t * dir;
+        pos = glm::floor(hit_pos);
+
         int k = step_level(pos);
-
-        // Log::info("Pos: {}, {}, {}", pos.x, pos.y, pos.z);
-        // Log::info("hit_pos: {}, {}, {}", hit_pos.x, hit_pos.y, hit_pos.z);
-        // Log::info("origin: {}, {}, {}", origin.x, origin.y, origin.z);
-        // Log::info("distance: {}", glm::dot(origin, hit_pos));
-
         if (k < 0) {
-            glm::bvec3 side_mask =
-                glm::greaterThanEqual(glm::dvec3(min), nearest);
-
-            Log::info("hit");
+            glm::bvec3 side_mask = glm::greaterThanEqual(glm::dvec3(t), ts);
 
             return HitResult{
                 .pos = pos,
