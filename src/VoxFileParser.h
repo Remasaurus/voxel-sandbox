@@ -3,10 +3,6 @@
 #include "Log.h"
 #include <expected>
 #include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <string_view>
 #include <vector>
 
 struct Header {

@@ -1,4 +1,8 @@
 #include "VoxFileParser.h"
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <string_view>
 
 namespace {
 std::vector<Voxel>
