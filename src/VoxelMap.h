@@ -27,13 +27,10 @@ enum class Material : std::uint8_t {
 struct Voxel {
     std::uint8_t data;
 
-    bool isAir() {
-        return data == 0;
-    }
+    bool isAir() { return data == 0; }
 };
 
-template<size_t Shift>
-struct BitIndexer {
+template <size_t Shift> struct BitIndexer {
 
     static constexpr int shift = Shift;
     static constexpr int mask = (1 << shift) - 1;
@@ -41,15 +38,12 @@ struct BitIndexer {
     static constexpr int max_area = max_length * max_length;
     static constexpr int max_volume = max_area * max_length;
 
-    template<typename T>
-    static constexpr T to_index(T x, T y, T z) {
+    template <typename T> static constexpr T to_index(T x, T y, T z) {
         // x + y * max_length + z * max_area but with correct bitshifting
         return (x & mask) | ((y & mask) << shift) | ((z & mask) << shift * 2);
     }
 
-
-    template<typename T>
-    static constexpr T to_index(glm::vec<3, T> vec) {
+    template <typename T> static constexpr T to_index(glm::vec<3, T> vec) {
         return to_index<T>(vec.x, vec.y, vec.z);
     }
 };
@@ -70,7 +64,7 @@ class Brick {
 public:
     static constexpr std::uint16_t num_voxels = BrickIndexer::max_volume;
 
-    Voxel& at(std::uint16_t index);
+    Voxel &at(std::uint16_t index);
 
 private:
     std::array<Voxel, num_voxels> voxels;
@@ -82,14 +76,14 @@ public:
     Sector();
 
     static constexpr std::uint8_t num_bricks = SectorIndexer::max_volume;
-    Brick& at(std::uint8_t index);
+    Brick &at(std::uint8_t index);
 
 private:
-    static constexpr std::uint8_t invalid_index = 255; // This is never used: 4 * 4 * 4 = 64 < 255
+    static constexpr std::uint8_t invalid_index =
+        255; // This is never used: 4 * 4 * 4 = 64 < 255
     std::vector<Brick> bricks;
     std::array<uint8_t, num_bricks> brick_indices;
 };
-
 
 struct HitResult {
     glm::vec3 normal;
@@ -99,15 +93,15 @@ struct HitResult {
 
 class VoxelMap {
 public:
-
     // TODO: Modify every at to [] for better performance.
-    Sector& get_sector(const glm::ivec3& pos);
-    Brick& get_brick(const glm::ivec3& pos);
-    Voxel get(const glm::ivec3& pos);
+    Sector &get_sector(const glm::ivec3 &pos);
+    Brick &get_brick(const glm::ivec3 &pos);
+    Voxel get(const glm::ivec3 &pos);
 
-    void set(const glm::ivec3& pos, Voxel voxel);
+    void set(const glm::ivec3 &pos, Voxel voxel);
 
-    std::optional<HitResult> raycast(glm::dvec3 origin, glm::dvec3 dir, double max_distance);
+    std::optional<HitResult>
+        raycast(glm::dvec3 origin, glm::dvec3 dir, double max_distance);
 
 private:
     std::unordered_map<glm::ivec3, Sector> sectors;

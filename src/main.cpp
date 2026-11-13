@@ -3,8 +3,8 @@
 #include "VoxelMap.h"
 #include <GL/glext.h>
 #include <cstdlib>
-#include <xmmintrin.h>
 #include <immintrin.h>
+#include <xmmintrin.h>
 
 namespace {
 const char *gl_string(GLenum var) {
