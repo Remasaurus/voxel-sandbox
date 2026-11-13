@@ -27,23 +27,35 @@ int main(void) {
     // Testing
     VoxelMap map;
     for (int x = -64; x < 64; x++) {
-        for (int y = 64; y < 8; y++) {
-            for (int z = -64; z < 8; z++) {
+        for (int y = -64; y < 64; y++) {
+            for (int z = -64; z < 64; z++) {
                 map.set({x, y, z}, Voxel{static_cast<uint8_t>(x ^ y ^ z)});
             }
+
         }
     }
 
     for (int x = -64; x < 64; x++) {
-        for (int y = 64; y < 8; y++) {
-            for (int z = -64; z < 8; z++) {
-                if (map.get({x, y, z}).data != (x ^ y ^ z)) {
+        for (int y = -64; y < 64; y++) {
+            for (int z = -64; z < 64; z++) {
+                if (map.get({x, y, z}).data != static_cast<uint8_t>(x ^ y ^ z)) {
                     Log::error("VoxelMap is not correct ({}, {}, {})", x, y, z);
                     return EXIT_FAILURE;
                 }
             }
         }
     }
+
+
+    auto hit = map.raycast({0, 128, 0}, {0, -1, 0}, 100);
+    if (!hit) {
+        Log::error("Raycast doesn't work");
+        return EXIT_FAILURE;
+    }
+
+    auto pos = hit.value().pos;
+    Log::info("Raycast hit: ({}, {}, {})", pos.x, pos.y, pos.z);
+
 
     Log::info("VoxelMap works as expected");
 

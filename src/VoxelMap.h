@@ -80,18 +80,18 @@ public:
 
     static constexpr std::uint8_t num_bricks = SectorIndexer::max_volume;
     Brick &at(std::uint8_t index);
+    bool exists(std::uint8_t index);
 
 private:
-    static constexpr std::uint8_t invalid_index =
-        255; // This is never used: 4 * 4 * 4 = 64 < 255
+    static constexpr std::uint8_t invalid_index = 255; 
     std::vector<Brick> bricks;
     std::array<uint8_t, num_bricks> brick_indices;
 };
 
 struct HitResult {
-    glm::vec3 normal;
-    glm::vec2 uv;
     glm::ivec3 pos;
+    glm::vec2 uv;
+    glm::vec3 normal;
 };
 
 class VoxelMap {
@@ -108,4 +108,5 @@ public:
 
 private:
     std::unordered_map<glm::ivec3, Sector> sectors;
+    int step_level(const glm::ivec3 &pos);
 };
