@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Camera.h"
-#include "Renderer.h"
-#include "VoxelMap.h"
+#include "render/Camera.h"
+#include "render/Renderer.h"
+#include "voxel/VoxelMap.h"
 #include "Window.h"
 
 class Application {

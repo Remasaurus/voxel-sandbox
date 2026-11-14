@@ -68,14 +68,17 @@ target_sources(
     PRIVATE
         src/main.cpp
         src/Application.cpp
-        src/Window.cpp
-        src/Camera.cpp
-        src/Renderer.cpp
-        src/Shader.cpp
-        src/VoxelLogic.cpp
         src/Clock.cpp
-        src/VoxFileParser.cpp
-        src/VoxelMap.cpp
+        src/Window.cpp
+
+        src/render/Camera.cpp
+        src/render/Renderer.cpp
+        src/render/Shader.cpp
+
+        src/voxel/VoxelLogic.cpp
+        src/voxel/VoxFileParser.cpp
+        src/voxel/VoxelMap.cpp
+
         glad/src/gl.c
 )
 

@@ -1,5 +1,5 @@
 #include "Shader.h"
-#include "Log.h"
+#include "../Log.h"
 #include <fstream>
 #include <glad/gl.h>
 #include <sstream>

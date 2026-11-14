@@ -3,7 +3,6 @@
 #include "Application.h"
 #include "Clock.h"
 #include "Log.h"
-#include "Renderer.h"
 #include <chrono>
 
 #include <GLFW/glfw3.h>

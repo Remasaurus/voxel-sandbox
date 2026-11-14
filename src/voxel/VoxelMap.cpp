@@ -1,5 +1,5 @@
 #include "VoxelMap.h"
-#include "Log.h"
+#include <algorithm>
 #include <glm/gtx/norm.hpp>
 
 Voxel &Brick::at(std::uint16_t index) { return voxels.at(index); }

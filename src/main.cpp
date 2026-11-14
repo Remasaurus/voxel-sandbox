@@ -1,6 +1,5 @@
 #include "Application.h"
 #include "Log.h"
-#include "VoxelMap.h"
 #include <GL/glext.h>
 #include <cstdlib>
 #include <immintrin.h>

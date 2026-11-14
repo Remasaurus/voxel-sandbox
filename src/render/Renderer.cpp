@@ -1,7 +1,7 @@
 #include <glad/gl.h>
 #include <imgui.h>
 
-#include "Log.h"
+#include "../Log.h"
 #include "Renderer.h"
 
 namespace {
