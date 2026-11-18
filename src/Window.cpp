@@ -1,3 +1,5 @@
+#include <glad/gl.h>
+
 #include "Window.h"
 #include "Log.h"
 #include <GLFW/glfw3.h>
@@ -6,6 +8,12 @@ namespace {
 void error_callback(int error, const char *description) {
     fprintf(stderr, "Error [%d]: %s\n", error, description);
 }
+
+// Not thread safe
+// We dont create windows on multiple threads,
+// so its fine for now
+bool is_opengl_loaded = false;
+
 } // namespace
 
 void Window::cursor_pos_callback(GLFWwindow *window, double xpos, double ypos) {
@@ -68,7 +76,8 @@ void Window::capture_mouse(bool capture) {
         if (glfwRawMouseMotionSupported()) {
             glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
         }
-        glfwSetCursor(window, NULL);
+        // Fix wayland issue where cursor does not update input mode
+        glfwSetCursor(window, NULL); 
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     } else {
         if (glfwRawMouseMotionSupported()) {
@@ -94,11 +103,19 @@ Window::Window() {
         return;
     }
 
+    make_current();
     glfwSetWindowUserPointer(window, this);
 
     glfwSetKeyCallback(window, key_callback);
     glfwGetCursorPos(window, &old_xpos, &old_ypos);
     glfwSetCursorPosCallback(window, cursor_pos_callback);
+
+    if (!is_opengl_loaded) {
+        int version = gladLoadGL(glfwGetProcAddress);
+        if (version == 0) {
+            Log::error("Failed to initialize opengl");
+        }
+    }
 
     Log::info("Raw mouse motion support: {}", !!glfwRawMouseMotionSupported());
 }

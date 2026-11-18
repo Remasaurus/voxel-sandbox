@@ -1,5 +1,3 @@
-#include <glad/gl.h>
-
 #include "Application.h"
 #include "Clock.h"
 #include "Log.h"
@@ -13,13 +11,6 @@
 using namespace std::chrono_literals;
 
 Application::Application() {
-    window.make_current();
-
-    int version = gladLoadGL(glfwGetProcAddress);
-    if (version == 0) {
-        Log::error("Failed to initialize opengl");
-    }
-
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
@@ -106,7 +97,7 @@ int Application::run() {
         ImGui::NewFrame();
         if (show_settings) {
             ImGui::SetNextWindowPos(
-                ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Once,
+                ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always,
                 ImVec2(0.5f, 0.5f)
             );
             ImGui::Begin("Settings");
@@ -163,7 +154,7 @@ int Application::run() {
         );
 
         ImGui::SeparatorText("Renderer");
-        auto stats = renderer.stats();
+        auto stats = renderer.stats;
         ImGui::Text("Render: %.2fms (%.2fmrays/s)", 0.f, 0.f);
         ImGui::Text("Traversal: %.2f iter/ray", 0.f);
 
