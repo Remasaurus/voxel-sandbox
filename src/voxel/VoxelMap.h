@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <cstdint>
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL // Needed for hashing glm::ivec3
@@ -7,28 +8,7 @@
 #include <optional>
 #include <vector>
 
-enum class Material : std::uint8_t {
-    Air,
-
-    // Solids
-    Wood,
-    Leaf,
-
-    // Powders
-    Sand,
-
-    // Fluids
-    Water,
-
-    // Gas
-    Steam,
-};
-
-struct Voxel {
-    std::uint8_t data;
-
-    bool isAir() { return data == 0; }
-};
+#include "Voxel.h"
 
 template <size_t Shift>
 struct BitIndexer {
@@ -105,6 +85,79 @@ public:
 
     std::optional<HitResult>
         raycast(glm::dvec3 origin, glm::dvec3 dir, double max_distance);
+
+    template<std::invocable<glm::ivec3&, Voxel&> Fn>
+    void dispatch(glm::ivec3 min, glm::ivec3 max, Fn&& visit) {
+
+        glm::ivec3 brick_min = min >> BrickIndexer::shift;
+        glm::ivec3 brick_max = max >> BrickIndexer::shift;
+
+        glm::ivec3 sector_min = brick_min >> SectorIndexer::shift;
+        glm::ivec3 sector_max = brick_max >> SectorIndexer::shift;
+
+
+        for (int sector_z = sector_min.z; sector_z <= sector_max.z; sector_z++) {
+            for (int sector_y = sector_min.y; sector_y <= sector_max.y; sector_y++) {
+                for (int sector_x = sector_min.x; sector_x <= sector_max.x; sector_x++) {
+                    glm::ivec3 sector_pos = {sector_x, sector_y, sector_z};
+
+                    glm::ivec3 sector_brick_min = sector_pos << SectorIndexer::shift;
+                    glm::ivec3 sector_brick_max = sector_brick_min | SectorIndexer::mask;
+
+                    const glm::ivec3 first_brick{
+                        std::max(brick_min.x, sector_brick_min.x),
+                        std::max(brick_min.y, sector_brick_min.y),
+                        std::max(brick_min.z, sector_brick_min.z),
+                    };
+
+                    const glm::ivec3 last_brick{
+                        std::min(brick_max.x, sector_brick_max.x),
+                        std::min(brick_max.y, sector_brick_max.y),
+                        std::min(brick_max.z, sector_brick_max.z),
+                    };
+
+                    Sector& sector = get_sector(sector_pos);
+
+                    for (int brick_z = first_brick.z; brick_z <= last_brick.z; brick_z++) {
+                        for (int brick_y = first_brick.y; brick_y <= last_brick.y; brick_y++) {
+                            for (int brick_x = first_brick.x; brick_x <= last_brick.x; brick_x++) {
+
+                                glm::ivec3 brick_pos = { brick_x, brick_y, brick_z };
+
+                                glm::ivec3 voxel_min = brick_pos << BrickIndexer::shift;
+                                glm::ivec3 voxel_max = voxel_min | BrickIndexer::mask;
+
+                                glm::ivec3 first_voxel{
+                                    std::max(min.x, voxel_min.x),
+                                    std::max(min.y, voxel_min.y),
+                                    std::max(min.z, voxel_min.z),
+                                };
+
+                                glm::ivec3 last_voxel{
+                                    std::min(max.x, voxel_max.x),
+                                    std::min(max.y, voxel_max.y),
+                                    std::min(max.z, voxel_max.z)
+                                };
+
+                                Brick& brick = sector.at(SectorIndexer::to_index(brick_pos));;
+
+                                for (int z = first_voxel.z; z <= last_voxel.z; z++) {
+                                    for (int y = first_voxel.y; y <= last_voxel.y; y++) {
+                                        for (int x = first_voxel.x; x <= last_voxel.x; x++) {
+                                            std::invoke(visit, glm::ivec3(x, y, z), brick.at(BrickIndexer::to_index(x, y, z)));
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+
+
+                }
+            }
+        }
+    }
 
 private:
     std::unordered_map<glm::ivec3, Sector> sectors;

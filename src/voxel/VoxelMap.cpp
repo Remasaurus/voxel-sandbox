@@ -117,6 +117,7 @@ std::optional<HitResult>
 
         int k = step_level(pos);
         if (k < 0) {
+            // 1 means side is hit by the ray.
             glm::bvec3 side_mask = glm::greaterThanEqual(glm::dvec3(t), ts);
 
             return HitResult{
