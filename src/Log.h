@@ -1,6 +1,7 @@
+#pragma once
+
 #include <chrono>
 #include <print>
-#include <string_view>
 
 namespace Log {
 template <typename... Args>
