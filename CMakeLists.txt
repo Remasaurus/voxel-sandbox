@@ -70,9 +70,11 @@ target_sources(
         src/Application.cpp
         src/Clock.cpp
         src/Window.cpp
+        src/Brush.cpp
 
         src/render/Camera.cpp
         src/render/Renderer.cpp
+        src/render/debug.cpp
         src/render/Shader.cpp
 
         src/voxel/VoxelLogic.cpp
