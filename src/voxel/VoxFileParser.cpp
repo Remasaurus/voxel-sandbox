@@ -1,4 +1,5 @@
 #include "VoxFileParser.h"
+#include "../Log.h"
 #include <cstring>
 #include <fstream>
 #include <iostream>

@@ -1,29 +1,15 @@
 #pragma once
 
-#include "../Log.h"
 #include <expected>
 #include <filesystem>
 #include <vector>
-#include "VoxelMap.h"
+#include "Voxel.h"
 
 struct Header {
     char magic[4];
     uint32_t version;
 };
 
-struct Color {
-    constexpr Color(uint32_t rgba)
-        : red(rgba & 0xff), green((rgba << 8) & 0xff),
-          blue((rgba << 16) & 0xff), alpha((rgba << 24) & 0xff) {}
-
-    constexpr Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-        : red(r), green(g), blue(b), alpha(a) {}
-
-    uint8_t red;
-    uint8_t green;
-    uint8_t blue;
-    uint8_t alpha;
-};
 
 static constexpr std::array<Color, 256> default_palette = {
     0x00000000, 0xffffffff, 0xffccffff, 0xff99ffff, 0xff66ffff, 0xff33ffff,
