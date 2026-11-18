@@ -24,6 +24,13 @@ void Window::cursor_pos_callback(GLFWwindow *window, double xpos, double ypos) {
     wnd->old_xpos = xpos;
     wnd->old_ypos = ypos;
 }
+void Window::size_callback(GLFWwindow *window, int width, int height) {
+    Window *wnd = static_cast<Window *>(glfwGetWindowUserPointer(window));
+
+    for (auto &callback : wnd->on_resizes) {
+        callback(width, height);
+    }
+}
 
 void Window::key_callback(
     GLFWwindow *window, int key, int scancode, int action, int mods
@@ -71,6 +78,10 @@ void Window::on_mouse_move(std::function<void(double, double)> &&f) {
     on_mouse_moves.push_back(std::move(f));
 }
 
+void Window::on_resize(std::function<void(int, int)> &&f) {
+    on_resizes.emplace_back(std::move(f));
+}
+
 void Window::capture_mouse(bool capture) {
     if (capture) {
         if (glfwRawMouseMotionSupported()) {
@@ -89,11 +100,18 @@ void Window::capture_mouse(bool capture) {
 
 void Window::request_close() { glfwSetWindowShouldClose(window, GLFW_TRUE); }
 
+std::pair<int, int> Window::size() const {
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    return { width, height };
+}
+
 Window::Window() {
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+    glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, true);
 
     glfwSetErrorCallback(error_callback);
 
@@ -109,6 +127,8 @@ Window::Window() {
     glfwSetKeyCallback(window, key_callback);
     glfwGetCursorPos(window, &old_xpos, &old_ypos);
     glfwSetCursorPosCallback(window, cursor_pos_callback);
+
+    glfwSetFramebufferSizeCallback(window, size_callback);
 
     if (!is_opengl_loaded) {
         int version = gladLoadGL(glfwGetProcAddress);
