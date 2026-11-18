@@ -3,16 +3,14 @@
 #include "Window.h"
 #include "Log.h"
 #include <GLFW/glfw3.h>
+#include <mutex>
 
 namespace {
 void error_callback(int error, const char *description) {
     fprintf(stderr, "Error [%d]: %s\n", error, description);
 }
 
-// Not thread safe
-// We dont create windows on multiple threads,
-// so its fine for now
-bool is_opengl_loaded = false;
+std::once_flag is_opengl_loaded;
 
 } // namespace
 
@@ -130,12 +128,12 @@ Window::Window() {
 
     glfwSetFramebufferSizeCallback(window, size_callback);
 
-    if (!is_opengl_loaded) {
+    std::call_once(is_opengl_loaded, []() {
         int version = gladLoadGL(glfwGetProcAddress);
         if (version == 0) {
             Log::error("Failed to initialize opengl");
         }
-    }
+    });
 
     Log::info("Raw mouse motion support: {}", !!glfwRawMouseMotionSupported());
 }
