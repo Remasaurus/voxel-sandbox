@@ -2,21 +2,61 @@
 #include "../Log.h"
 #include <fstream>
 #include <glad/gl.h>
-#include <sstream>
+#include <glm/gtc/type_ptr.hpp>
+
+
+
+Shader create_compute_shader(const std::filesystem::path& comp_path) {
+    Shader shader;
+    shader.add_stage(comp_path, GL_COMPUTE_SHADER);
+    shader.link();
+    return shader;
+}
+
+Shader create_pixel_shader(const std::filesystem::path& vert_path, const std::filesystem::path &frag_path) {
+    Shader shader;
+    shader.add_stage(vert_path, GL_VERTEX_SHADER);
+    shader.add_stage(frag_path, GL_FRAGMENT_SHADER);
+    shader.link();
+    return shader;
+}
+
+void Shader::set_uniform(const std::string& name, int value) {
+	glUniform1i(glGetUniformLocation(program, name.c_str()), value);
+}
+void Shader::set_uniform(const std::string& name, float value) {
+	glUniform1f(glGetUniformLocation(program, name.c_str()), value);
+}
+void Shader::set_uniform(const std::string& name, const glm::ivec2& value) {
+	glUniform2i(glGetUniformLocation(program, name.c_str()), value.x, value.y);
+}
+void Shader::set_uniform(const std::string& name, const glm::vec2& value) {
+	glUniform2f(glGetUniformLocation(program, name.c_str()), value.x, value.y);
+}
+void Shader::set_uniform(const std::string& name, const glm::vec3& value) {
+	glUniform3f(glGetUniformLocation(program, name.c_str()), value.x, value.y, value.z);
+}
+
+void Shader::set_uniform(const std::string& name, const glm::mat4& value) {
+	glUniformMatrix4fv(glGetUniformLocation(program, name.c_str()), 1, false, glm::value_ptr(value));
+}
 
 namespace {
 std::string read_file(const std::filesystem::path &path) {
-    std::ifstream file;
-
-    file.open(path.string());
+    std::ifstream file(path.string());
     if (!file.is_open()) {
         Log::error("Could not open {}", path.string());
         return "";
     }
 
-    std::stringstream stream;
-    stream << file.rdbuf();
-    return stream.str();
+    const uintmax_t file_size = std::filesystem::file_size(path);
+    std::string file_buffer(file_size, '\0');
+    file.read(
+        reinterpret_cast<char *>(file_buffer.data()),
+        static_cast<long>(file_size)
+    );
+
+    return file_buffer;
 }
 } // namespace
 

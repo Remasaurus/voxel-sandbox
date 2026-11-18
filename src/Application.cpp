@@ -49,6 +49,11 @@ Application::Application() {
             camera.rotate(glm::vec2(dx, dy) * (rotation_speed * 0.01f));
         }
     });
+
+    window.on_resize([](int width, int height) {
+        Log::info("Resizing to {} x {}", width, height);
+        glViewport(0, 0, width, height);
+    });
 }
 
 Application::~Application() {
@@ -100,7 +105,7 @@ int Application::run() {
                 ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always,
                 ImVec2(0.5f, 0.5f)
             );
-            ImGui::Begin("Settings");
+            ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoDecoration);
 
             ImGui::SeparatorText("General");
             ImGui::SliderFloat("Movement speed", &movement_speed, 0, 1);
@@ -113,7 +118,7 @@ int Application::run() {
             ImGui::Checkbox("Heatmap", &renderer.heatmap);
 
             if (ImGui::Button("Close")) {
-                window.request_close();
+                show_settings = false;
             }
             ImGui::End();
         }
