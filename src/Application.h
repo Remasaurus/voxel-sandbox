@@ -3,6 +3,7 @@
 #include "render/Camera.h"
 #include "render/Renderer.h"
 #include "voxel/VoxelMap.h"
+#include "Brush.h"
 #include "Window.h"
 
 class Application {
@@ -23,4 +24,5 @@ private:
     Window window;
     Renderer renderer;
     VoxelMap voxel_map;
+    Brush brush;
 };
