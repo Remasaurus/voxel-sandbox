@@ -36,7 +36,7 @@ void Brush::ignite(VoxelMap &map, const glm::ivec3 &pos) {
     map.dispatch(
         bounding_box_min(pos), bounding_box_max(pos),
         [&](glm::ivec3 voxel_pos, Voxel &vox) {
-            if (glm::length2(voxel_pos - pos))
+            if (!within_radius(pos, voxel_pos))
                 return;
 
             // TODO: ignite vox

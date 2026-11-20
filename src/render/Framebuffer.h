@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <initializer_list>
 #include <utility>
 
@@ -9,10 +10,18 @@ public:
         std::initializer_list<std::pair<unsigned, int>> parameters
     );
 
-    unsigned get() { return handle; }
-    void update(
-        int width, int height, void *data, int internal_format, unsigned format
+    void use(int unit = 0);
+
+    void allocate(
+        int width, int height, int internal_format, unsigned format,
+        void *data = nullptr
     );
+    void write(
+        int x_offset, int y_offset, int width, int height, unsigned format,
+        void *data
+    );
+
+    void generate_mipmap();
 
     ~Texture();
 
@@ -33,3 +42,5 @@ private:
     Texture depth_stencil;
     Texture color_texture;
 };
+
+Texture load_image(const std::filesystem::path &path);
