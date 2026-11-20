@@ -1,5 +1,11 @@
 #pragma once
 
+// VoxelMap is based on the BrickMap: https://studenttheses.uu.nl/handle/20.500.12932/20460
+//
+// Inspirations:
+// - Comparison different structures: https://github.com/dubiousconst282/VoxelRT/tree/alt-renderers
+// - Brickmap implementation: https://github.com/stijnherfst/BrickMap/tree/master
+
 #include <concepts>
 #include <cstdint>
 #include <glm/glm.hpp>
