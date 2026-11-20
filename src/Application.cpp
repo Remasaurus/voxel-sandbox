@@ -14,11 +14,6 @@ Application::Application() {
 
     setup_imgui();
 
-    window.on_keydown('W', [this]() {
-        Log::info("Moving forward");
-        camera.position += camera.front * movement_speed;
-    });
-
     window.on_keydown(GLFW_KEY_ESCAPE, [this]() {
         show_settings = !show_settings;
         if (show_settings) {
