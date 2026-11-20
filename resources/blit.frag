@@ -1,6 +1,6 @@
 #version 460 core
 
-layout (location = 0) in vec2 vTexCoord;
+in vec2 vTexCoord;
 
 uniform sampler2D screen;
 
