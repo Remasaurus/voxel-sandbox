@@ -7,6 +7,7 @@
 #include "voxel/VoxelMap.h"
 
 #include <chrono>
+
 class Application {
     using duration = std::chrono::high_resolution_clock::duration;
 

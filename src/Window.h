@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 #include <functional>
 #include <unordered_map>
 #include <vector>
@@ -11,20 +12,21 @@ public:
     ~Window();
 
     bool should_close() const;
+    void request_close() const;
     void make_current() const;
     void set_swap_interval(int interval) const;
     void swap_buffers() const;
-
+    
     void on_keydown(int key, const std::function<void()> &f);
     void on_keydown(int key, std::function<void()> &&f);
     void on_keyup(int key, const std::function<void()> &f);
     void on_keyup(int key, std::function<void()> &&f);
-
+    
+    void capture_mouse(bool capture = true) const;
     void on_mouse_move(std::function<void(double, double)> &&f);
     void on_resize(std::function<void(int, int)> &&f);
 
-    void capture_mouse(bool capture = true);
-    void request_close();
+    glm::vec3 move_input() const;
 
     operator bool() const;
 

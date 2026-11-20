@@ -20,6 +20,7 @@ public:
     glm::mat4 projection() const;
 
     void rotate(const glm::vec2 &rotation_offset);
+    void move(const glm::vec3 direction, const float deltatime);
 
     float fov = 45.0f;
 

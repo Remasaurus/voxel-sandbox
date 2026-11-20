@@ -80,7 +80,7 @@ void Window::on_resize(std::function<void(int, int)> &&f) {
     on_resizes.emplace_back(std::move(f));
 }
 
-void Window::capture_mouse(bool capture) {
+void Window::capture_mouse(bool capture) const {
     if (capture) {
         if (glfwRawMouseMotionSupported()) {
             glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
@@ -96,7 +96,25 @@ void Window::capture_mouse(bool capture) {
     }
 }
 
-void Window::request_close() { glfwSetWindowShouldClose(window, GLFW_TRUE); }
+glm::vec3 Window::move_input() const {
+    // emulate minecraft fly controls
+    glm::vec3 input_dir{
+        glfwGetKey(window, GLFW_KEY_D) - glfwGetKey(window, GLFW_KEY_A),
+        glfwGetKey(window, GLFW_KEY_W) - glfwGetKey(window, GLFW_KEY_S),
+        glfwGetKey(window, GLFW_KEY_SPACE) -
+            glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)
+    };
+
+    // normalize input direction
+    if (glm::length(input_dir) > 1.0f) {
+        input_dir = glm::normalize(input_dir);
+    }
+
+    // run: double speed when holding shift
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT))
+        input_dir *= 2.0f;
+    return input_dir;
+}
 
 std::pair<int, int> Window::size() const {
     int width, height;
@@ -141,6 +159,9 @@ Window::Window() {
 Window::~Window() { glfwDestroyWindow(window); }
 
 bool Window::should_close() const { return glfwWindowShouldClose(window); }
+void Window::request_close() const {
+    glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
 void Window::make_current() const { return glfwMakeContextCurrent(window); }
 void Window::set_swap_interval(int interval) const {
     return glfwSwapInterval(interval);

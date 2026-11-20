@@ -190,6 +190,7 @@ int Application::run() {
         // game update logic
         before = std::chrono::high_resolution_clock::now();
         glfwPollEvents();
+        camera.move(window.move_input(), 1.0 / 60.0); //TODO: dynamic deltatime
         // TODO: implement actual game update logic
         updating = std::chrono::high_resolution_clock::now() - before;
 

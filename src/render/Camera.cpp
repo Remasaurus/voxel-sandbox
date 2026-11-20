@@ -29,3 +29,11 @@ void Camera::update_vectors() {
     right = glm::normalize(glm::cross(front, UP));
     up = glm::normalize(glm::cross(right, front));
 }
+
+void Camera::move(const glm::vec3 direction, const float deltatime) {
+    glm::vec3 move_distance = direction * deltatime;
+
+    // move in the move direction from the camera's point of view
+    position += move_distance.x * right + move_distance.y * front +
+                move_distance.z * UP;
+}
