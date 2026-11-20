@@ -2,8 +2,10 @@
 
 #include <chrono>
 #include <print>
+#include <thread>
 
 namespace Log {
+
 template <typename... Args>
 void info(std::format_string<Args...> fmt, Args &&...args) {
     auto now =
@@ -18,5 +20,7 @@ void error(std::format_string<Args...> fmt, Args &&...args) {
         std::chrono::current_zone()->to_local(std::chrono::system_clock::now());
     std::print(stderr, "[{}] ", now);
     std::println(stderr, fmt, std::forward<Args>(args)...);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
+
 } // namespace Log
