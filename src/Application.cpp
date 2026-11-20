@@ -110,6 +110,7 @@ int Application::run() {
                 ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always,
                 ImVec2(0.5f, 0.5f)
             );
+            ImGui::SetNextWindowSize(ImVec2(0.0f, 0.0f));
             ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoDecoration);
 
             ImGui::SeparatorText("General");
