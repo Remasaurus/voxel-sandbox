@@ -16,6 +16,8 @@ Application::Application() {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     io.Fonts->AddFontDefaultVector();
+    io.IniFilename = NULL;
+    io.LogFilename = NULL;
 
     // Setup Dear ImGui style
     ImGuiStyle &style = ImGui::GetStyle();
@@ -54,6 +56,9 @@ Application::Application() {
         Log::info("Resizing to {} x {}", width, height);
         glViewport(0, 0, width, height);
     });
+
+    auto [width, height] = window.size();
+    glViewport(0, 0, width, height);
 }
 
 Application::~Application() {
