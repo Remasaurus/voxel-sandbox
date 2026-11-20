@@ -1,8 +1,27 @@
+#version 460 core
 
-float2 intersect_aabb(float3 origin, float3 dir, float3 top_left, float3 bottom_right) {
-    
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+layout(rgba32f, binding = 0) uniform writeonly image2D albedo;
+
+float sdf(vec2 p) {
+    return p.y;
 }
 
 void main() {
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    vec2 p = vec2(
+            float(texelCoord.x) / gl_NumWorkGroups.x,
+            float(texelCoord.y) / gl_NumWorkGroups.y
+        );
 
+    float dist = sdf(p);
+    vec4 color = vec4(0);
+    if (dist < 0) {
+        color.r = -dist;
+        imageStore(albedo, texelCoord, color);
+    } else {
+        color.g = dist;
+        imageStore(albedo, texelCoord, color);
+    }
 }

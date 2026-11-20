@@ -14,7 +14,7 @@ public:
     glm::vec3 position{};
 
     glm::vec2 rotation = glm::vec2(-90.0f, 0.0f);
-    glm::vec2 size{};
+    glm::uvec2 size{};
 
     glm::mat4 view() const;
     glm::mat4 projection() const;

@@ -52,5 +52,4 @@ private:
         cursor_pos_callback(GLFWwindow *window, double xpos, double ypos);
 
     static void size_callback(GLFWwindow *window, int width, int height);
-
 };

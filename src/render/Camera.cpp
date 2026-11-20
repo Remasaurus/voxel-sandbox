@@ -7,7 +7,8 @@ glm::mat4 Camera::view() const {
 
 glm::mat4 Camera::projection() const {
     return glm::perspective(
-        glm::radians(fov), size.x / size.y, NEAR_CLIP_PLANE, FAR_CLIP_PLANE
+        glm::radians(fov), static_cast<float>(size.x) / size.y, NEAR_CLIP_PLANE,
+        FAR_CLIP_PLANE
     );
 }
 

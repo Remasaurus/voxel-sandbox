@@ -12,6 +12,7 @@
       cmake
       libGL
       git
+      clang-tools
       pkg-config
 
       wayland
@@ -28,10 +29,6 @@
       libGLX
       libglvnd
       mesa
-
-      glfw
-      glm
-      imgui
     ];
   in {
     devShells.${system}.default = pkgs.mkShell {

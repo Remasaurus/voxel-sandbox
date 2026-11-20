@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(voxel-sandbox 
-    VERSION 1.0
-    LANGUAGES CXX C
-)
+project(voxel-sandbox VERSION 1.0 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 23)
 
@@ -42,14 +39,14 @@ FetchContent_MakeAvailable(glfw glm imgui)
 #
 add_library(imgui STATIC)
 
-target_include_directories(imgui
+target_include_directories(
+    imgui
     SYSTEM
-    PUBLIC 
-        ${imgui_SOURCE_DIR}
-        ${imgui_SOURCE_DIR}/backends
+    PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends
 )
 
-target_sources(imgui
+target_sources(
+    imgui
     PRIVATE
         ${imgui_SOURCE_DIR}/imgui.cpp
         ${imgui_SOURCE_DIR}/imgui_demo.cpp
@@ -71,46 +68,30 @@ target_sources(
         src/Clock.cpp
         src/Window.cpp
         src/Brush.cpp
-
         src/render/Camera.cpp
         src/render/Renderer.cpp
+        src/render/Framebuffer.cpp
         src/render/debug.cpp
         src/render/Shader.cpp
-
         src/voxel/VoxelLogic.cpp
         src/voxel/VoxFileParser.cpp
         src/voxel/VoxelMap.cpp
-
         glad/src/gl.c
 )
 
-target_include_directories(${PROJECT_NAME}
-    PRIVATE
-        glad/include
-)
+target_include_directories(${PROJECT_NAME} PRIVATE glad/include)
 
-target_link_libraries(${PROJECT_NAME}
-    PRIVATE
-        OpenGL::OpenGL
-        glfw
-        glm
-        imgui
-)
+target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::OpenGL glfw glm imgui)
 
 #
 # Add warnings
 #
 if(MSVC)
-    target_compile_options(${PROJECT_NAME} 
-        PRIVATE 
-            /W4
-            /WX
-            /permissive-
-    )
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX /permissive-)
 else()
     target_compile_options(
         ${PROJECT_NAME}
-        PRIVATE 
+        PRIVATE
             -pedantic
             -Wall
             -Wextra
@@ -148,9 +129,7 @@ add_compile_options(
     $<$<CONFIG:Debug>:-fsanitize=undefined>
     $<$<CONFIG:Debug>:-fno-omit-frame-pointer>
 )
-add_link_options(
-    $<$<CONFIG:Debug>:-fsanitize=address,undefined>
-)
+add_link_options($<$<CONFIG:Debug>:-fsanitize=address,undefined>)
 add_compile_definitions(
     $<$<CONFIG:Debug>:_GLIBCXX_ASSERTIONS>
     $<$<CONFIG:Debug>:_GLIBCXX_DEBUG>
@@ -168,11 +147,7 @@ add_compile_options(
 )
 
 include(CheckIPOSupported)
-check_ipo_supported(
-    RESULT ipo_supported
-    OUTPUT ipo_error
-    LANGUAGES CXX
-)
+check_ipo_supported(RESULT ipo_supported OUTPUT ipo_error LANGUAGES CXX)
 
 if(ipo_supported)
     message(STATUS "IPO/LTO enabled")

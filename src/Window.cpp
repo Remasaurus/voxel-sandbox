@@ -1,7 +1,7 @@
 #include <glad/gl.h>
 
-#include "Window.h"
 #include "Log.h"
+#include "Window.h"
 #include <GLFW/glfw3.h>
 #include <mutex>
 
@@ -86,7 +86,7 @@ void Window::capture_mouse(bool capture) {
             glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
         }
         // Fix wayland issue where cursor does not update input mode
-        glfwSetCursor(window, NULL); 
+        glfwSetCursor(window, NULL);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     } else {
         if (glfwRawMouseMotionSupported()) {
@@ -101,7 +101,7 @@ void Window::request_close() { glfwSetWindowShouldClose(window, GLFW_TRUE); }
 std::pair<int, int> Window::size() const {
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
-    return { width, height };
+    return {width, height};
 }
 
 Window::Window() {
