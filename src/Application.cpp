@@ -21,13 +21,16 @@ Application::Application() {
 
     window.on_keydown(GLFW_KEY_ESCAPE, [this]() {
         show_settings = !show_settings;
+        if (show_settings) {
+            ImGui::SetNextWindowSize(ImVec2(0.01f, 0.01f));
+        }
         window.capture_mouse(!show_settings);
     });
 
     window.capture_mouse();
 
     window.on_mouse_move([this](double dx, double dy) {
-        if (show_settings) {
+        if (!show_settings) {
             camera.rotate(glm::vec2(dx, dy) * (rotation_speed * 0.01f));
         }
     });
@@ -106,7 +109,7 @@ void Application::render_options_menu(
         ImGui::Checkbox("Heatmap", &renderer.heatmap);
 
         if (ImGui::Button("Quit Game")) {
-            std::exit(0);
+            window.request_close();
         }
         if (ImGui::Button("Close")) {
             show_settings = false;
