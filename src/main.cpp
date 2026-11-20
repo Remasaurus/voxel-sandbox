@@ -46,7 +46,6 @@ int main(void) {
     }
     Log::info("VoxelMap works as expected");
 
-
     auto hit = map.raycast({0, 128, 0}, {0, -1, 0}, 100);
     if (!hit) {
         Log::error("Raycast doesn't work");
@@ -55,7 +54,6 @@ int main(void) {
 
     auto pos = hit.value().pos;
     Log::info("Raycast hit: ({}, {}, {})", pos.x, pos.y, pos.z);
-
 
     auto path = std::filesystem::current_path();
     std::filesystem::current_path(path.parent_path());

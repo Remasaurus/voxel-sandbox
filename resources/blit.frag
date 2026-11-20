@@ -6,6 +6,4 @@ uniform sampler2D screen;
 
 out vec4 oFragColor;
 
-void main() {
-    oFragColor = vec4(vTexCoord, 0, 1);
-}
+void main() { oFragColor = vec4(vTexCoord, 0, 1); }

@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Brush.h"
+#include "Window.h"
 #include "render/Camera.h"
 #include "render/Renderer.h"
 #include "voxel/VoxelMap.h"
-#include "Brush.h"
-#include "Window.h"
 
 class Application {
 public:
