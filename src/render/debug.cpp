@@ -1,7 +1,8 @@
+#include <glad/gl.h>
+
 #include "Renderer.h"
 #include "../Log.h"
 
-#include <glad/gl.h>
 
 namespace {
 void debug_message_callback(

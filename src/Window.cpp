@@ -116,7 +116,7 @@ glm::vec3 Window::move_input() const {
     return input_dir;
 }
 
-std::pair<int, int> Window::size() const {
+glm::ivec2 Window::size() const {
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     return {width, height};

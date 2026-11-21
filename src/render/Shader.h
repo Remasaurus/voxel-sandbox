@@ -13,7 +13,6 @@ public:
 
     void add_stage(const std::filesystem::path &path, unsigned shader_type);
 
-    void set_uniform(std::string_view name, int value);
     void link();
     void use();
 

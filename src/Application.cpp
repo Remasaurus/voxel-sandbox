@@ -30,13 +30,17 @@ Application::Application() {
         }
     });
 
-    window.on_resize([](int width, int height) {
+    window.on_resize([&](int width, int height) {
         Log::info("Resizing to {} x {}", width, height);
-        glViewport(0, 0, width, height);
+        camera.size = {
+            width / pixels_per_ray,
+            height / pixels_per_ray,
+        };
     });
 
-    auto [width, height] = window.size();
-    glViewport(0, 0, width, height);
+    // Some window managers dont start window with resize event
+    glm::vec2 size = window.size();
+    camera.size = glm::uvec2(size / pixels_per_ray);
 }
 
 Application::~Application() {
@@ -99,6 +103,7 @@ void Application::render_options_menu(
         ImGui::SliderFloat("Movement speed", &movement_speed, 0, 1);
         ImGui::SliderFloat("Rotation speed", &rotation_speed, 0, 1);
         ImGui::SliderFloat("FOV", &camera.fov, 10, 120);
+        ImGui::SliderFloat("Pixels per ray", &pixels_per_ray, 1, 4);
         ImGui::SliderInt("Light Bounces", &renderer.light_bounces, 0, 5);
         ImGui::SliderInt("Render distance", &renderer.render_distance, 10, 200);
         ImGui::Checkbox("Heatmap", &renderer.heatmap);
@@ -194,7 +199,7 @@ int Application::run() {
 
         // scene rendering
         before = std::chrono::high_resolution_clock::now();
-        renderer.render(camera);
+        renderer.render(window, camera);
         render_time = std::chrono::high_resolution_clock::now() - before;
 
         // GUI rendering

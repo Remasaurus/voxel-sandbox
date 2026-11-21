@@ -3,6 +3,7 @@
 #include "Camera.h"
 #include "Framebuffer.h"
 #include "Shader.h"
+#include "../Window.h"
 
 void enable_opengl_debug();
 
@@ -11,7 +12,7 @@ public:
     Renderer();
     ~Renderer();
 
-    void render(const Camera &camera);
+    void render(const Window& window, const Camera &camera);
 
     int render_distance = 100;
     int light_bounces = 2;
@@ -23,11 +24,10 @@ public:
     } stats;
 
 private:
-    glm::uvec2 size;
-
     Shader raycast_shader;
     Framebuffer raycast_framebuffer;
 
     Shader blit_shader;
     unsigned empty_vao;
+    Texture tex;
 };

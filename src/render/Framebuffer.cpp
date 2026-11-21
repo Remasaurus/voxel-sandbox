@@ -1,59 +1,66 @@
 #include "Framebuffer.h"
 #include <glad/gl.h>
+#include <cassert>
+#include "../Log.h"
 
-Texture::Texture() { glCreateTextures(GL_TEXTURE_2D, 1, &handle); }
-Texture::~Texture() { glDeleteTextures(1, &handle); }
-
-void Texture::allocate(
-    int width, int height, int internal_format, unsigned format, void *data
-) {
-    glTexImage2D(
-        GL_TEXTURE_2D, 0, internal_format, width, height, 0, format,
-        GL_UNSIGNED_BYTE, data
-    );
+Framebuffer::~Framebuffer() { delete_framebuffer(); }
+Framebuffer::Framebuffer(Framebuffer && rhs) {
+    framebuffer = std::exchange(rhs.framebuffer, 0);
 }
+Framebuffer& Framebuffer::operator=(Framebuffer && rhs) {
+    delete_framebuffer();
+    framebuffer = std::exchange(rhs.framebuffer, 0);
 
-void Texture::write(
-    int x_offset, int y_offset, int width, int height, unsigned format,
-    void *data
-) {
-    glTexSubImage2D(
-        GL_TEXTURE_2D, 0, x_offset, y_offset, width, height, format,
-        GL_UNSIGNED_BYTE, data
-    );
-}
-
-void Texture::generate_mipmap() { glGenerateMipmap(GL_TEXTURE_2D); }
-
-void Texture::use(int unit) { (void)unit; }
-
-void Texture::set_parameters(
-    std::initializer_list<std::pair<unsigned, int>> parameters
-) {
-    for (auto [name, param] : parameters) {
-        glTextureParameteri(handle, name, param);
-    }
-}
-
-void Framebuffer::resize(unsigned width, unsigned height) {
-    (void)width;
-    (void)height;
+    return *this;
 }
 
 Framebuffer::Framebuffer() {
     glCreateFramebuffers(1, &framebuffer);
-    // glNamedFramebufferTexture(
-    //     framebuffer, GL_COLOR_ATTACHMENT0, color_texture.get(), 0
-    // );
-    // glNamedFramebufferTexture(
-    //     framebuffer, GL_DEPTH_STENCIL_ATTACHMENT, depth_stencil.get(), 0
-    // );
 }
 
-void Framebuffer::use() { glBindFramebuffer(GL_FRAMEBUFFER, framebuffer); }
+Framebuffer::Framebuffer(unsigned width, unsigned height) {
+    glCreateFramebuffers(1, &framebuffer);
+    resize(width, height);
+}
 
-Framebuffer::~Framebuffer() {
+void Framebuffer::resize(unsigned width, unsigned height) {
+    assert(width < std::numeric_limits<int>::max());
+    assert(height < std::numeric_limits<int>::max());
+
+    width_ = width;
+    height_ = height;
+
+    // color
+    color_texture = Texture(width, height, GL_RGBA32F);
+    color_texture.set_parameters({
+        { GL_TEXTURE_WRAP_S, GL_REPEAT },
+        { GL_TEXTURE_WRAP_T, GL_REPEAT },
+        { GL_TEXTURE_MIN_FILTER, GL_LINEAR },
+        { GL_TEXTURE_MAG_FILTER, GL_LINEAR },
+    });
+    glNamedFramebufferTexture(
+        framebuffer, GL_COLOR_ATTACHMENT0, color_texture.get(), 0
+    );
+
+    // depth stencil
+   glCreateRenderbuffers(1, &depth_stencil);
+   glNamedRenderbufferStorage(
+       depth_stencil, GL_DEPTH24_STENCIL8,
+       static_cast<int>(width), static_cast<int>(height)
+   );
+   glNamedFramebufferRenderbuffer(
+       framebuffer, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth_stencil
+   );
+
+   auto result = glCheckNamedFramebufferStatus(framebuffer, GL_FRAMEBUFFER);
+   if (result != GL_FRAMEBUFFER_COMPLETE) {
+        Log::error("Failed to create framebuffer [{}]", result);
+	}
+}
+
+void Framebuffer::delete_framebuffer() {
     if (framebuffer) {
         glDeleteFramebuffers(1, &framebuffer);
     }
 }
+

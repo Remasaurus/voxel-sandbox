@@ -55,6 +55,12 @@ int main(void) {
     auto pos = hit.value().pos;
     Log::info("Raycast hit: ({}, {}, {})", pos.x, pos.y, pos.z);
 
+#ifdef NDEBUG
+    Log::info("Asserts are disabled");
+#else
+    Log::info("Asserts are enabled");
+#endif
+
     auto path = std::filesystem::current_path();
     std::filesystem::current_path(path.parent_path());
 

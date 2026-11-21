@@ -21,6 +21,7 @@ public:
 private:
     float movement_speed = 0.5;
     float rotation_speed = 0.5;
+    float pixels_per_ray = 1;
 
     bool show_settings = false;
 

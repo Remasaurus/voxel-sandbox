@@ -31,7 +31,7 @@ public:
     operator bool() const;
 
     GLFWwindow *get() const { return window; }
-    std::pair<int, int> size() const;
+    glm::ivec2 size() const;
 
 private:
     GLFWwindow *window;

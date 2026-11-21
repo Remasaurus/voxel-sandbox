@@ -68,11 +68,14 @@ target_sources(
         src/Clock.cpp
         src/Window.cpp
         src/Brush.cpp
+
         src/render/Camera.cpp
         src/render/Renderer.cpp
         src/render/Framebuffer.cpp
         src/render/debug.cpp
         src/render/Shader.cpp
+        src/render/Texture.cpp
+
         src/voxel/VoxelLogic.cpp
         src/voxel/VoxFileParser.cpp
         src/voxel/VoxelMap.cpp

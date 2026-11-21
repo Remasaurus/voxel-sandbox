@@ -1,46 +1,31 @@
-#include <filesystem>
-#include <initializer_list>
-#include <utility>
-
-class Texture {
-public:
-    Texture();
-
-    void set_parameters(
-        std::initializer_list<std::pair<unsigned, int>> parameters
-    );
-
-    void use(int unit = 0);
-
-    void allocate(
-        int width, int height, int internal_format, unsigned format,
-        void *data = nullptr
-    );
-    void write(
-        int x_offset, int y_offset, int width, int height, unsigned format,
-        void *data
-    );
-
-    void generate_mipmap();
-
-    ~Texture();
-
-private:
-    unsigned handle = 0;
-};
+#include "Texture.h"
+#include <glm/glm.hpp>
 
 class Framebuffer {
 public:
     Framebuffer();
-    ~Framebuffer();
+    Framebuffer(unsigned width, unsigned height);
 
-    void use();
+    Framebuffer(Framebuffer &&);
+    Framebuffer(const Framebuffer &) = delete;
+    Framebuffer &operator=(Framebuffer &&);
+    Framebuffer &operator=(const Framebuffer &) = delete;
+
     void resize(unsigned width, unsigned height);
 
+    Texture& as_texture() { return color_texture; }
+
+    glm::uvec2 size() { return { width_, height_ }; }
+
+    ~Framebuffer();
+
 private:
-    unsigned framebuffer = 0;
-    Texture depth_stencil;
+    void delete_framebuffer();
+
+    unsigned width_ = 0;
+    unsigned height_ = 0;
+
+    unsigned framebuffer;
+    unsigned depth_stencil;
     Texture color_texture;
 };
-
-Texture load_image(const std::filesystem::path &path);
