@@ -7,6 +7,14 @@
 #include <string_view>
 
 namespace {
+template <typename T>
+T load(const std::vector<std::byte> &file_buffer, size_t *offset) {
+    T var;
+    std::memcpy(&var, file_buffer.data() + *offset, sizeof(T));
+    *offset += sizeof(T);
+    return var;
+}
+
 
 std::vector<VoxVoxel>
     parse_voxels(size_t offset, const std::vector<std::byte> &file_buffer) {
@@ -46,6 +54,104 @@ std::vector<Voxel> parse_voxels_new(
 
     return output;
 }
+
+std::string parse_string_type(const std::vector<std::byte> &file_buffer, size_t *offset) {
+    int32_t buffer_size = load<int32_t>(file_buffer, offset);
+
+    std::string output{};
+    size_t buffer_size_t = static_cast<size_t>(buffer_size);
+    output.resize(buffer_size_t);
+    std::memcpy(output.data(), file_buffer.data() + *offset, buffer_size_t);
+    *offset += buffer_size_t;
+    return output;
+}
+
+std::unordered_map<std::string, std::string> parse_dict_type(const std::vector<std::byte> &file_buffer, size_t *offset) {
+    std::unordered_map<std::string, std::string> output{};
+    uint32_t n_key_value_pairs{};
+    std::memcpy(&n_key_value_pairs, file_buffer.data() + *offset, sizeof(uint32_t));
+    *offset += sizeof(uint32_t);
+
+    for (size_t i = 0; i < n_key_value_pairs; i++) {
+        auto key = parse_string_type(file_buffer, offset);
+        auto value = parse_string_type(file_buffer, offset);
+        output[key] = value;
+    }
+    return output;
+}
+
+
+GroupNode parse_group_node(const std::vector<std::byte> &file_buffer, size_t offset) {
+
+    int32_t node_id = load<int32_t>(file_buffer, &offset);
+    auto node_attributes = parse_dict_type(file_buffer, &offset);
+    int32_t n_children = load<int32_t>(file_buffer, &offset);
+
+    std::vector<int32_t> child_node_ids;
+    child_node_ids.reserve(static_cast<size_t>(n_children));
+    for (size_t i = 0; i < static_cast<size_t>(n_children); i++) {
+        child_node_ids.push_back(load<int32_t>(file_buffer, &offset));
+    }
+
+    return {node_id, node_attributes, n_children, child_node_ids};
+}
+
+ShapeNode parse_shape_node(const std::vector<std::byte> &file_buffer, size_t offset) {
+    int32_t node_id = load<int32_t>(file_buffer, &offset);
+    auto node_attributes = parse_dict_type(file_buffer, &offset);
+    int32_t n_models = load<int32_t>(file_buffer, &offset);
+
+    std::vector<ShapeModel> models;
+    models.reserve(static_cast<size_t>(n_models));
+    for (size_t i = 0; i < static_cast<size_t>(n_models); i++) {
+        ShapeModel model;
+        model.model_id = load<int32_t>(file_buffer, &offset);
+        auto model_attributes = parse_dict_type(file_buffer, &offset);
+        if(auto it = model_attributes.find("_f"); it != model_attributes.end()) {
+            model.frame_index = std::stoi(it->second);
+        }
+        models.emplace_back(model);
+    }
+    return {node_id, node_attributes, n_models, models};
+}
+
+
+
+TransformNode parse_transform_node(const std::vector<std::byte> &file_buffer, size_t offset) {
+    int32_t node_id = load<int32_t>(file_buffer, &offset);
+    auto node_attributes = parse_dict_type(file_buffer, &offset);
+
+    int32_t child_node_id = load<int32_t>(file_buffer, &offset);
+    offset += (sizeof(int32_t)); // skiping the reserved_id = -1
+    
+    int32_t layer_id = load<int32_t>(file_buffer, &offset);
+    int32_t n_frames = load<int32_t>(file_buffer, &offset);
+   
+    std::vector<Frame> frames;
+    for(size_t i = 0; i < static_cast<size_t>(n_frames); i++) {
+        Frame frame;
+
+        auto frame_attributes = parse_dict_type(file_buffer, &offset);
+        if(auto it = frame_attributes.find("_r"); it != frame_attributes.end()){
+            frame.rotation = std::stoi(it->second);
+        }
+        if(auto it = frame_attributes.find("_t"); it != frame_attributes.end()){
+            auto transform_string = std::stringstream(it->second);
+            std::string s;
+            for(size_t j = 0; j < frame.translation.size(); j++) {
+                std::getline(transform_string, s, ' ');
+                frame.translation[j] = std::stoi(s);
+            }
+        }
+        if(auto it = frame_attributes.find("_f"); it != frame_attributes.end()){
+            frame.frame_index = std::stoi(it->second);
+        }
+        frames.push_back(frame);
+    }
+
+    return {node_id, node_attributes, child_node_id, -1, layer_id, n_frames, frames};
+}
+
 
 } // namespace
 

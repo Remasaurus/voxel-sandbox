@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <vector>
 #include "Voxel.h"
+// https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox.txt
 
 struct Header {
     char magic[4];
@@ -90,6 +91,40 @@ struct Model {
     std::array<Color, 256> palette = default_palette;
     Size bounds;
 };
+struct Frame {
+    int8_t rotation; // should be 3x3 matrix ?!?!?!
+    std::array<int32_t,3> translation;
+    int32_t frame_index;
+};
+
+struct TransformNode {
+    int32_t node_id;
+    std::unordered_map<std::string, std::string> node_attributes;
+    int32_t child_node_id;
+    int32_t reserved_id = -1;
+    int32_t layer_id;
+    int32_t n_frames; // must be greater than 0
+    std::vector<Frame> frames;
+};
+
+struct GroupNode {
+    int32_t node_id;
+    std::unordered_map<std::string, std::string> node_attributes;
+    int32_t n_children;
+    std::vector<int32_t> child_node_ids;
+};
+
+struct ShapeModel {
+    int32_t model_id;
+    int32_t frame_index; 
+};
+
+struct ShapeNode {
+    int32_t node_id;
+    std::unordered_map<std::string, std::string> node_attributes;
+    int32_t n_models; // must be greater than 0
+    std::vector<ShapeModel> models;
+};
 
 static_assert(std::endian::native == std::endian::little);
 static_assert(sizeof(Header) == 8);
@@ -102,5 +137,5 @@ enum class parse_error {
     does_not_start_with_main_chunk,
     main_chunk_has_bytes
 };
-std::expected<std::vector<Model>, parse_error>
+[[nodiscard]] std::expected<std::vector<Model>, parse_error>
     parse_vox_file(std::filesystem::path file_path, const std::array<Voxel, 256>& voxel_palette);
