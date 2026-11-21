@@ -14,17 +14,6 @@ Renderer::Renderer() {
 
     raycast_shader = create_compute_shader("resources/raycast.comp");
 
-    std::uint8_t color[3] = { 255, 255, 255 };
-
-    tex = Texture(1, 1, GL_RGB8);
-    tex.set_parameters({
-        { GL_TEXTURE_WRAP_S, GL_REPEAT },
-        { GL_TEXTURE_WRAP_T, GL_REPEAT },
-        { GL_TEXTURE_MIN_FILTER, GL_LINEAR },
-        { GL_TEXTURE_MAG_FILTER, GL_LINEAR },
-    });
-    tex.write(GL_RGB, color);
-
     Log::info("Renderer has been setup");
 }
 
@@ -42,6 +31,12 @@ void Renderer::render(const Window& window, const Camera &camera) {
 
     // Raycast voxel
     raycast_shader.use();
+    raycast_shader.set_uniform("pos", camera.position);
+    raycast_shader.set_uniform("x_axis", camera.right);
+    raycast_shader.set_uniform("y_axis", camera.up);
+    raycast_shader.set_uniform("dir", camera.front);
+    raycast_shader.set_uniform("fov", glm::radians(camera.fov));
+
     raycast_framebuffer.as_texture().bind_image_texture(0, GL_WRITE_ONLY, GL_RGBA32F);
     glDispatchCompute(camera.size.x, camera.size.y, 1);
 

@@ -26,7 +26,7 @@ Application::Application() {
 
     window.on_mouse_move([this](double dx, double dy) {
         if (!show_settings) {
-            camera.rotate(glm::vec2(dx, dy) * (rotation_speed * 0.01f));
+            camera.rotate(glm::vec2(dx, -dy) * (rotation_speed * 0.01f));
         }
     });
 
