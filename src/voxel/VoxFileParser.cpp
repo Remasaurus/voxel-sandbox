@@ -167,6 +167,9 @@ TransformNode parse_transform_node(const std::vector<std::byte> &file_buffer, si
     return {node_id, node_attributes, child_node_id, -1, layer_id, n_frames, frames};
 }
 
+void transform_model(const Transformation &transf, size_t vox_model_id){
+}
+
 //https://en.cppreference.com/cpp/utility/variant/visit
 template<class... Ts>
 struct overloads : Ts... { using Ts::operator()...; };
@@ -177,14 +180,14 @@ void DFS(const std::vector<std::variant<TransformNode, GroupNode, ShapeNode>>& n
     const auto visitor = overloads
     {
         [&](const TransformNode &node) {
-            // add accumulation of transformations
-            const auto& frame = node.frames[0];
+            //accumulation of transformations
+            const auto& frame = node.frames[0]; // always using frame 0 we do not support animations
             Transformation new_transf;
 
             new_transf.rotation = transf.rotation * decode_rotation_matrix(static_cast<uint8_t>(frame.rotation));
             glm::ivec3 new_translation(frame.translation[0], frame.translation[1], frame.translation[2]);
             new_transf.translation = transf.rotation * transf.translation + new_translation;
-
+    
             DFS(nodes, new_transf, node.child_node_id);
         },
         [&](const GroupNode &node){ 
@@ -193,8 +196,8 @@ void DFS(const std::vector<std::variant<TransformNode, GroupNode, ShapeNode>>& n
             }
         },
         [&](const ShapeNode &node){ 
-            (void)node;
-            // emit the voxels
+            auto voxel_model = node.models[0].model_id;
+
         }
     };
 }
