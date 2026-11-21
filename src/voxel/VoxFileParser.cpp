@@ -167,16 +167,17 @@ TransformNode parse_transform_node(const std::vector<std::byte> &file_buffer, si
 
     return {node_id, node_attributes, child_node_id, -1, layer_id, n_frames, frames};
 }
-
-void transform_model(const Transformation &transf, size_t vox_model_id){
-}
+struct InterVoxRepr {
+    glm::ivec3 vox_pos;
+    uint8_t color_index;
+};
 
 //https://en.cppreference.com/cpp/utility/variant/visit
 template<class... Ts>
 struct overloads : Ts... { using Ts::operator()...; };
 using var_t = std::variant<TransformNode, GroupNode, ShapeNode>;
 
-void DFS(const std::vector<std::variant<TransformNode, GroupNode, ShapeNode>>& nodes, std::vector<Model>& models, const Transformation &transf, int32_t node_id) {
+void DFS(const std::vector<std::variant<TransformNode, GroupNode, ShapeNode>>& nodes, std::vector<Model>& models, const Transformation &transf, int32_t node_id, std::vector<InterVoxRepr> *output) {
     const var_t &node = nodes[static_cast<size_t>(node_id)];
     const auto visitor = overloads
     {
@@ -188,23 +189,24 @@ void DFS(const std::vector<std::variant<TransformNode, GroupNode, ShapeNode>>& n
             new_transf.rotation = transf.rotation * decode_rotation_matrix(static_cast<uint8_t>(frame.rotation));
             glm::ivec3 new_translation(frame.translation[0], frame.translation[1], frame.translation[2]);
             new_transf.translation = transf.rotation * new_translation + transf.translation;
-    
-            DFS(nodes, models, new_transf, n.child_node_id);
+
+            DFS(nodes, models, new_transf, n.child_node_id, output);
         },
         [&](const GroupNode &n){ 
             for(const int32_t child_node_id : n.child_node_ids) {
-                DFS(nodes,models, transf, child_node_id);
+                DFS(nodes, models, transf, child_node_id, output);
             }
         },
         [&](const ShapeNode &n){ 
             auto voxel_model = n.models[0].model_id; //always using first model we do not support animations
             Model& model = models[static_cast<size_t>(voxel_model)];
             glm::ivec3 center{model.bounds.x/2, model.bounds.y/2, model.bounds.z/2};
-            for(auto& voxel : model.voxels) {
+            for(const auto& voxel : model.voxels) {
                 glm::ivec3 vox_pos{voxel.x, voxel.y, voxel.z};
                 glm::ivec3 relative_vox_pos = vox_pos - center;
                 // TODO DO SOMETHING WITH THIS NEW POS
                 glm::ivec3 new_vox_pos = transf.rotation * relative_vox_pos + transf.translation;
+                output->push_back({new_vox_pos, voxel.color_index});
             };
         }
     };
