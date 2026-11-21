@@ -16,6 +16,7 @@ T load(const std::vector<std::byte> &file_buffer, size_t *offset) {
     *offset += sizeof(T);
     return var;
 }
+// identity = 4
 glm::imat3x3 decode_rotation_matrix(uint8_t row_major_rotation){
     uint8_t i_of_non_zero_entry_1st_row = row_major_rotation & 0x3;
     uint8_t i_of_non_zero_entry_2nd_row = (row_major_rotation >> 2) & 0x3;
@@ -175,7 +176,7 @@ template<class... Ts>
 struct overloads : Ts... { using Ts::operator()...; };
 using var_t = std::variant<TransformNode, GroupNode, ShapeNode>;
 
-void DFS(const std::vector<std::variant<TransformNode, GroupNode, ShapeNode>>& nodes, const Transformation &transf, int32_t node_id) {
+void DFS(const std::vector<std::variant<TransformNode, GroupNode, ShapeNode>>& nodes, std::vector<Model>& models, const Transformation &transf, int32_t node_id) {
     const var_t &node = nodes[static_cast<size_t>(node_id)];
     const auto visitor = overloads
     {
@@ -188,17 +189,26 @@ void DFS(const std::vector<std::variant<TransformNode, GroupNode, ShapeNode>>& n
             glm::ivec3 new_translation(frame.translation[0], frame.translation[1], frame.translation[2]);
             new_transf.translation = transf.rotation * new_translation + transf.translation;
     
-            DFS(nodes, new_transf, n.child_node_id);
+            DFS(nodes, models, new_transf, n.child_node_id);
         },
         [&](const GroupNode &n){ 
             for(const int32_t child_node_id : n.child_node_ids) {
-                DFS(nodes, transf, child_node_id);
+                DFS(nodes,models, transf, child_node_id);
             }
         },
         [&](const ShapeNode &n){ 
-            auto voxel_model = n.models[0].model_id;
+            auto voxel_model = n.models[0].model_id; //always using first model we do not support animations
+            Model& model = models[static_cast<size_t>(voxel_model)];
+            glm::ivec3 center{model.bounds.x/2, model.bounds.y/2, model.bounds.z/2};
+            for(auto& voxel : model.voxels) {
+                glm::ivec3 vox_pos{voxel.x, voxel.y, voxel.z};
+                glm::ivec3 relative_vox_pos = vox_pos - center;
+                // TODO DO SOMETHING WITH THIS NEW POS
+                glm::ivec3 new_vox_pos = transf.rotation * relative_vox_pos + transf.translation;
+            };
         }
     };
+    std::visit(visitor, node);
 }
 
 } // namespace
