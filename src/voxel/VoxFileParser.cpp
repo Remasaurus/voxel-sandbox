@@ -2,9 +2,11 @@
 #include "../Log.h"
 #include <cstring>
 #include <fstream>
+#include <glm/fwd.hpp>
 #include <iostream>
 #include <memory>
 #include <string_view>
+#include <variant>
 
 namespace {
 template <typename T>
@@ -14,14 +16,29 @@ T load(const std::vector<std::byte> &file_buffer, size_t *offset) {
     *offset += sizeof(T);
     return var;
 }
+glm::imat3x3 decode_rotation_matrix(uint8_t row_major_rotation){
+    uint8_t i_of_non_zero_entry_1st_row = row_major_rotation & 0x3;
+    uint8_t i_of_non_zero_entry_2nd_row = (row_major_rotation >> 2) & 0x3;
+    uint8_t i_of_non_zero_entry_3rd_row = 3 - i_of_non_zero_entry_1st_row - i_of_non_zero_entry_2nd_row;
+    bool sign_1st_row = row_major_rotation & 0x10;
+    bool sign_2nd_row = row_major_rotation & 0x20;
+    bool sign_3rd_row = row_major_rotation & 0x30;
+    
+    int8_t val0 = 1 * (sign_1st_row ? -1 : 1);
+    int8_t val1 = 1 * (sign_2nd_row ? -1 : 1);
+    int8_t val2 = 1 * (sign_3rd_row ? -1 : 1);
 
+    glm::imat3x3 output(0);
+    output[0][i_of_non_zero_entry_1st_row] = val0;
+    output[1][i_of_non_zero_entry_2nd_row] = val1;
+    output[2][i_of_non_zero_entry_3rd_row] = val2;
+
+    return output;
+}
 
 std::vector<VoxVoxel>
     parse_voxels(size_t offset, const std::vector<std::byte> &file_buffer) {
-    uint32_t n_voxels{};
-    std::memcpy(&n_voxels, file_buffer.data() + offset, sizeof(uint32_t));
-
-    offset += sizeof(uint32_t);
+    uint32_t n_voxels = load<uint32_t>(file_buffer, &offset);
     std::vector<VoxVoxel> output;
     output.reserve(n_voxels);
     for (size_t i = 0; i < n_voxels; i++) {
@@ -152,6 +169,29 @@ TransformNode parse_transform_node(const std::vector<std::byte> &file_buffer, si
     return {node_id, node_attributes, child_node_id, -1, layer_id, n_frames, frames};
 }
 
+//https://en.cppreference.com/cpp/utility/variant/visit
+template<class... Ts>
+struct overloads : Ts... { using Ts::operator()...; };
+using var_t = std::variant<TransformNode, GroupNode, ShapeNode>;
+void DFS(const std::vector<std::variant<TransformNode, GroupNode, ShapeNode>>& nodes, const Transformation &trans, int32_t node_id) {
+    const var_t &node = nodes[static_cast<size_t>(node_id)];
+    const auto visitor = overloads
+    {
+        [nodes, trans](const TransformNode &n) {
+            // add accumulation of transformations
+            DFS(nodes, trans, n.child_node_id);
+        },
+        [nodes, trans](const GroupNode &n){ 
+            for(const int32_t child_node_id : n.child_node_ids) {
+                DFS(nodes, trans, child_node_id);
+            }
+        },
+        [nodes](const ShapeNode &n){ 
+            (void)n;
+            // emit the voxels
+        }
+    };
+}
 
 } // namespace
 
@@ -201,7 +241,9 @@ std::expected<std::vector<Model>, parse_error>
     offset += sizeof(Chunk);
     const size_t total_n_bytes_in_file = main_chunk->n_bytes_children + offset;
 
-    std::vector<Model> output{};
+    std::vector<Model> models{};
+    std::vector<std::variant<TransformNode, GroupNode, ShapeNode>> nodes{};
+
     while (offset < total_n_bytes_in_file) {
         const Chunk *chunk =
             std::start_lifetime_as<Chunk>(file_buffer.data() + offset);
@@ -211,27 +253,33 @@ std::expected<std::vector<Model>, parse_error>
             uint32_t n_models = *std::start_lifetime_as<uint32_t>(
                 file_buffer.data() + (offset + sizeof(Chunk))
             );
-            output.reserve(n_models);
+            models.reserve(n_models);
         } else if (chunk_id == "SIZE") {
             auto model_size = *std::start_lifetime_as<Size>(
                 file_buffer.data() + (offset + sizeof(Chunk))
             );
-            output.emplace_back(Model{.voxels = {}, .bounds = model_size});
+            models.emplace_back(Model{.voxels = {}, .bounds = model_size});
         } else if (chunk_id == "XYZI") {
-            output.back().voxels =
+            models.back().voxels =
                 parse_voxels(offset + sizeof(Chunk), file_buffer);
-                auto& model_size = output.back().bounds;
+                auto& model_size = models.back().bounds;
                 size_t size = model_size.x * model_size.y * model_size.z;
                 //TODO WIP
                 parse_voxels_new(offset + sizeof(Chunk), file_buffer, voxel_palette, size, model_size.x, model_size.y);
 
         } else if (chunk_id == "RGBA") {
             Log::info("File has custom RGBA pallet (ignored)");
+        } else if (chunk_id == "nTRN") {
+            nodes.push_back(parse_transform_node(file_buffer, offset + sizeof(Chunk)));
+        } else if (chunk_id == "nGRP") {
+            nodes.push_back(parse_group_node(file_buffer, offset + sizeof(Chunk)));
+        } else if (chunk_id == "nSHP") {
+            nodes.push_back(parse_shape_node(file_buffer, offset + sizeof(Chunk)));
         }
 
         offset +=
             sizeof(Chunk) + chunk->n_bytes_chunk + chunk->n_bytes_children;
     }
 
-    return output;
+    return models;
 }

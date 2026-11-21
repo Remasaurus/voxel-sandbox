@@ -2,8 +2,11 @@
 
 #include <expected>
 #include <filesystem>
+#include <glm/fwd.hpp>
 #include <vector>
 #include "Voxel.h"
+#include <glm/mat3x3.hpp>
+#include <glm/vec3.hpp>
 // https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox.txt
 
 struct Header {
@@ -92,9 +95,14 @@ struct Model {
     Size bounds;
 };
 struct Frame {
-    int8_t rotation; // should be 3x3 matrix ?!?!?!
+    int8_t rotation; 
     std::array<int32_t,3> translation;
     int32_t frame_index;
+};
+
+struct Transformation {
+    glm::imat3x3 rotation{1};
+    glm::ivec3 transform{0};
 };
 
 struct TransformNode {
