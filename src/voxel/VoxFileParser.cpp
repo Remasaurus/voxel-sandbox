@@ -22,7 +22,7 @@ glm::imat3x3 decode_rotation_matrix(uint8_t row_major_rotation){
     uint8_t i_of_non_zero_entry_3rd_row = 3 - i_of_non_zero_entry_1st_row - i_of_non_zero_entry_2nd_row;
     bool sign_1st_row = row_major_rotation & 0x10;
     bool sign_2nd_row = row_major_rotation & 0x20;
-    bool sign_3rd_row = row_major_rotation & 0x30;
+    bool sign_3rd_row = row_major_rotation & 0x40;
     
     int8_t val0 = 1 * (sign_1st_row ? -1 : 1);
     int8_t val1 = 1 * (sign_2nd_row ? -1 : 1);
@@ -179,25 +179,24 @@ void DFS(const std::vector<std::variant<TransformNode, GroupNode, ShapeNode>>& n
     const var_t &node = nodes[static_cast<size_t>(node_id)];
     const auto visitor = overloads
     {
-        [&](const TransformNode &node) {
+        [&](const TransformNode &n) {
             //accumulation of transformations
-            const auto& frame = node.frames[0]; // always using frame 0 we do not support animations
+            const auto& frame = n.frames[0]; // always using frame 0 we do not support animations
             Transformation new_transf;
 
             new_transf.rotation = transf.rotation * decode_rotation_matrix(static_cast<uint8_t>(frame.rotation));
             glm::ivec3 new_translation(frame.translation[0], frame.translation[1], frame.translation[2]);
-            new_transf.translation = transf.rotation * transf.translation + new_translation;
+            new_transf.translation = transf.rotation * new_translation + transf.translation;
     
-            DFS(nodes, new_transf, node.child_node_id);
+            DFS(nodes, new_transf, n.child_node_id);
         },
-        [&](const GroupNode &node){ 
-            for(const int32_t child_node_id : node.child_node_ids) {
+        [&](const GroupNode &n){ 
+            for(const int32_t child_node_id : n.child_node_ids) {
                 DFS(nodes, transf, child_node_id);
             }
         },
-        [&](const ShapeNode &node){ 
-            auto voxel_model = node.models[0].model_id;
-
+        [&](const ShapeNode &n){ 
+            auto voxel_model = n.models[0].model_id;
         }
     };
 }
