@@ -94,6 +94,7 @@ struct Model {
     std::array<Color, 256> palette = default_palette;
     Size bounds;
 };
+
 struct Frame {
     int8_t rotation; 
     std::array<int32_t,3> translation;
@@ -102,7 +103,7 @@ struct Frame {
 
 struct Transformation {
     glm::imat3x3 rotation{1};
-    glm::ivec3 transform{0};
+    glm::ivec3 translation{0};
 };
 
 struct TransformNode {

@@ -132,8 +132,6 @@ ShapeNode parse_shape_node(const std::vector<std::byte> &file_buffer, size_t off
     return {node_id, node_attributes, n_models, models};
 }
 
-
-
 TransformNode parse_transform_node(const std::vector<std::byte> &file_buffer, size_t offset) {
     int32_t node_id = load<int32_t>(file_buffer, &offset);
     auto node_attributes = parse_dict_type(file_buffer, &offset);
@@ -173,21 +171,29 @@ TransformNode parse_transform_node(const std::vector<std::byte> &file_buffer, si
 template<class... Ts>
 struct overloads : Ts... { using Ts::operator()...; };
 using var_t = std::variant<TransformNode, GroupNode, ShapeNode>;
-void DFS(const std::vector<std::variant<TransformNode, GroupNode, ShapeNode>>& nodes, const Transformation &trans, int32_t node_id) {
+
+void DFS(const std::vector<std::variant<TransformNode, GroupNode, ShapeNode>>& nodes, const Transformation &transf, int32_t node_id) {
     const var_t &node = nodes[static_cast<size_t>(node_id)];
     const auto visitor = overloads
     {
-        [nodes, trans](const TransformNode &n) {
+        [&](const TransformNode &node) {
             // add accumulation of transformations
-            DFS(nodes, trans, n.child_node_id);
+            const auto& frame = node.frames[0];
+            Transformation new_transf;
+
+            new_transf.rotation = transf.rotation * decode_rotation_matrix(static_cast<uint8_t>(frame.rotation));
+            glm::ivec3 new_translation(frame.translation[0], frame.translation[1], frame.translation[2]);
+            new_transf.translation = transf.rotation * transf.translation + new_translation;
+
+            DFS(nodes, new_transf, node.child_node_id);
         },
-        [nodes, trans](const GroupNode &n){ 
-            for(const int32_t child_node_id : n.child_node_ids) {
-                DFS(nodes, trans, child_node_id);
+        [&](const GroupNode &node){ 
+            for(const int32_t child_node_id : node.child_node_ids) {
+                DFS(nodes, transf, child_node_id);
             }
         },
-        [nodes](const ShapeNode &n){ 
-            (void)n;
+        [&](const ShapeNode &node){ 
+            (void)node;
             // emit the voxels
         }
     };
