@@ -10,7 +10,7 @@
 
 using namespace std::chrono_literals;
 
-Application::Application() {
+Application::Application(): voxel_map(terrain_generator), renderer(voxel_map) {
 
     setup_imgui();
 
@@ -113,6 +113,7 @@ void Application::render_options_menu(
         }
         if (ImGui::Button("Close")) {
             show_settings = false;
+            window.capture_mouse(true);
         }
         ImGui::End();
     }
@@ -164,6 +165,13 @@ void Application::render_options_menu(
     ImGui::End();
     ImGui::EndFrame();
     ImGui::Render();
+}
+
+void Application::update_voxels() {
+    voxel_map.for_each_dirty([](const glm::ivec3& pos, Brick& brick) {
+        (void)pos;
+        (void)brick;
+    });
 }
 
 int Application::run() {

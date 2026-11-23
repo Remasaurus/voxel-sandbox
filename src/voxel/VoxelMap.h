@@ -14,6 +14,7 @@
 #include <optional>
 #include <vector>
 
+#include "TerrainGenerator.h"
 #include "Voxel.h"
 
 template <size_t Shift>
@@ -54,9 +55,13 @@ public:
     static constexpr std::uint16_t num_voxels = BrickIndexer::max_volume;
 
     Voxel &at(std::uint16_t index);
+    bool is_dirty() { return dirty; }
 
 private:
+    bool dirty = false;
     std::array<Voxel, num_voxels> voxels;
+
+    friend class VoxelMap; // will control dirty flag;
 };
 
 // Sector is a 4x4x4 set of Bricks
@@ -82,6 +87,8 @@ struct HitResult {
 
 class VoxelMap {
 public:
+    VoxelMap(TerrainGenerator& generator);
+
     // TODO: Modify every at to [] for better performance.
     Sector &get_sector(const glm::ivec3 &pos);
     Brick &get_brick(const glm::ivec3 &pos);
@@ -89,8 +96,17 @@ public:
 
     void set(const glm::ivec3 &pos, Voxel voxel);
 
+    void mark_brick_dirty(const glm::ivec3& brick_pos);
+
     std::optional<HitResult>
         raycast(glm::dvec3 origin, glm::dvec3 dir, double max_distance);
+
+    template<std::invocable<glm::ivec3&, Brick&> Fn>
+    void for_each_dirty(Fn&& fn) {
+        for (auto& [pos, brick] : dirty_bricks) {
+            fn(pos, brick);
+        }
+    }
 
     template<std::invocable<glm::ivec3&, Voxel&> Fn>
     void dispatch(glm::ivec3 min, glm::ivec3 max, Fn&& visit) {
@@ -166,6 +182,15 @@ public:
     }
 
 private:
+    struct DirtyBrick {
+        glm::ivec3 pos;
+        Brick& brick;
+    };
+
     std::unordered_map<glm::ivec3, Sector> sectors;
+    std::vector<DirtyBrick> dirty_bricks;
+
+    TerrainGenerator& terrain_generator;
+
     int step_level(const glm::ivec3 &pos);
 };

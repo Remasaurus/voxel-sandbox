@@ -5,6 +5,7 @@
 #include "render/Camera.h"
 #include "render/Renderer.h"
 #include "voxel/VoxelMap.h"
+#include "voxel/TerrainGenerator.h"
 
 #include <chrono>
 
@@ -25,12 +26,14 @@ private:
 
     bool show_settings = false;
 
+    Brush brush;
     Camera camera;
     Window window;
-    Renderer renderer;
     VoxelMap voxel_map;
-    Brush brush;
+    TerrainGenerator terrain_generator;
+    Renderer renderer;
 
+    void update_voxels();
     void setup_imgui();
     void render_options_menu(
         duration waiting, duration updating,

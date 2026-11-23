@@ -2,13 +2,18 @@
 #include <algorithm>
 #include <glm/gtx/norm.hpp>
 
+VoxelMap::VoxelMap(TerrainGenerator& generator)
+    : terrain_generator(generator) {}
+
 Voxel &Brick::at(std::uint16_t index) { return voxels.at(index); }
 
 Brick &Sector::at(std::uint8_t index) {
     std::uint8_t slot = brick_indices.at(index);
+
     if (slot != invalid_index) {
         return bricks.at(slot);
     }
+
     brick_indices.at(index) = bricks.size();
     return bricks.emplace_back();
 }
@@ -19,10 +24,19 @@ bool Sector::exists(std::uint8_t index) {
 
 Sector::Sector() { brick_indices.fill(invalid_index); }
 
+void VoxelMap::mark_brick_dirty(const glm::ivec3& brick_pos) {
+    Brick& brick = get_brick(brick_pos);
+    if (!brick.dirty) return;
+
+    brick.dirty = true;
+    dirty_bricks.emplace_back(brick_pos, brick);
+}
+
 Sector &VoxelMap::get_sector(const glm::ivec3 &pos) {
     // TODO: Initialize using some kind of TerrainGenerator
     return sectors[pos];
 }
+
 
 Brick &VoxelMap::get_brick(const glm::ivec3 &pos) {
     Sector &sector = get_sector(pos >> SectorIndexer::shift);
