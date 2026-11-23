@@ -146,5 +146,6 @@ enum class parse_error {
     does_not_start_with_main_chunk,
     main_chunk_has_bytes
 };
+
 [[nodiscard]] std::expected<std::vector<Model>, parse_error>
     parse_vox_file(std::filesystem::path file_path, const std::array<Voxel, 256>& voxel_palette);

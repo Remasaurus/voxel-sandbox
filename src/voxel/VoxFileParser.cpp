@@ -1,5 +1,6 @@
 #include "VoxFileParser.h"
 #include "../Log.h"
+#include "Voxel.h"
 #include <cstring>
 #include <fstream>
 #include <glm/fwd.hpp>
@@ -16,6 +17,18 @@ T load(const std::vector<std::byte> &file_buffer, size_t *offset) {
     *offset += sizeof(T);
     return var;
 }
+
+// because the nodes may not be in the file in the node_id order
+void insert(std::vector<std::variant<TransformNode,GroupNode,ShapeNode>>* node_vec, std::variant<TransformNode,GroupNode,ShapeNode>&& node) {
+    auto get_id = [](const auto &n) { return n.node_id; };
+    int32_t node_id = std::visit(get_id, node);
+    if(node_id >= static_cast<int32_t>(node_vec->size())) {
+        node_vec->resize(static_cast<size_t>(node_id + 1));
+    }
+
+    (*node_vec)[static_cast<size_t>(node_id)] = std::move(node);
+}
+
 // identity = 4
 glm::imat3x3 decode_rotation_matrix(uint8_t row_major_rotation){
     uint8_t i_of_non_zero_entry_1st_row = row_major_rotation & 0x3;
@@ -172,12 +185,23 @@ struct InterVoxRepr {
     uint8_t color_index;
 };
 
+std::vector<Voxel> convert_to_flat_3d_voxel_vec(const std::vector<InterVoxRepr> intervox_vec, const std::array<Voxel, 256> &voxel_palette) {
+    for(const auto& inter_vox : intervox_vec) {
+        Voxel voxel = voxel_palette[inter_vox.color_index];
+    }
+    return {};
+}
+
 //https://en.cppreference.com/cpp/utility/variant/visit
 template<class... Ts>
 struct overloads : Ts... { using Ts::operator()...; };
 using var_t = std::variant<TransformNode, GroupNode, ShapeNode>;
 
-void DFS(const std::vector<std::variant<TransformNode, GroupNode, ShapeNode>>& nodes, std::vector<Model>& models, const Transformation &transf, int32_t node_id, std::vector<InterVoxRepr> *output) {
+void DFS(
+    const std::vector<std::variant<TransformNode, GroupNode, ShapeNode>> &nodes,
+    std::vector<Model> &models, const Transformation &transf, int32_t node_id,
+    std::vector<InterVoxRepr> *output
+) {
     const var_t &node = nodes[static_cast<size_t>(node_id)];
     const auto visitor = overloads
     {
@@ -204,7 +228,6 @@ void DFS(const std::vector<std::variant<TransformNode, GroupNode, ShapeNode>>& n
             for(const auto& voxel : model.voxels) {
                 glm::ivec3 vox_pos{voxel.x, voxel.y, voxel.z};
                 glm::ivec3 relative_vox_pos = vox_pos - center;
-                // TODO DO SOMETHING WITH THIS NEW POS
                 glm::ivec3 new_vox_pos = transf.rotation * relative_vox_pos + transf.translation;
                 output->push_back({new_vox_pos, voxel.color_index});
             };
@@ -290,16 +313,19 @@ std::expected<std::vector<Model>, parse_error>
         } else if (chunk_id == "RGBA") {
             Log::info("File has custom RGBA pallet (ignored)");
         } else if (chunk_id == "nTRN") {
-            nodes.push_back(parse_transform_node(file_buffer, offset + sizeof(Chunk)));
+            insert(&nodes,parse_transform_node(file_buffer, offset + sizeof(Chunk)));
         } else if (chunk_id == "nGRP") {
-            nodes.push_back(parse_group_node(file_buffer, offset + sizeof(Chunk)));
+            insert(&nodes,parse_group_node(file_buffer, offset + sizeof(Chunk)));
         } else if (chunk_id == "nSHP") {
-            nodes.push_back(parse_shape_node(file_buffer, offset + sizeof(Chunk)));
+            insert(&nodes, parse_shape_node(file_buffer, offset + sizeof(Chunk)));
         }
-
         offset +=
             sizeof(Chunk) + chunk->n_bytes_chunk + chunk->n_bytes_children;
     }
 
+    std::vector<InterVoxRepr> internal_voxes;
+    Transformation transf;
+    DFS(nodes, models, transf, 0, &internal_voxes);
+    
     return models;
 }
