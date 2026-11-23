@@ -10,6 +10,15 @@ uniform vec3 x_axis;
 uniform vec3 y_axis;
 uniform vec3 dir;
 
+int ambient_occlusion_corner(int side1, int side2, int corner) {
+    // if (side1 && side2) {
+    //     return 0;
+    // }
+    // return 3 - (side1 + side2 + corner);
+
+    return (1 - side1 * side2) * (3 - (side1 + side2 + corner));
+}
+
 void main() {
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
     ivec2 dims = imageSize(albedo);
@@ -19,11 +28,11 @@ void main() {
     }
 
     vec2 p = vec2(
-        float(texelCoord.x * 2 - dims.x) / dims.x,
-        float(texelCoord.y * 2 - dims.y) / dims.y
-    );
+            float(texelCoord.x * 2 - dims.x) / dims.x,
+            float(texelCoord.y * 2 - dims.y) / dims.y
+        );
 
     vec3 dir = normalize(p.x * x_axis + p.y * y_axis + dir * fov);
 
-    imageStore(albedo, texelCoord, vec4(dir.x, dir.y, 1, 1));
+    imageStore(albedo, texelCoord, vec4(dir.x, dir.y, dir.z, 1));
 }
