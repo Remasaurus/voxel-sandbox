@@ -1,6 +1,7 @@
 #include "VoxFileParser.h"
 #include "../Log.h"
 #include "Voxel.h"
+#include <cstdint>
 #include <cstring>
 #include <fstream>
 #include <glm/fwd.hpp>
@@ -43,9 +44,9 @@ glm::imat3x3 decode_rotation_matrix(uint8_t row_major_rotation){
     int8_t val2 = 1 * (sign_3rd_row ? -1 : 1);
 
     glm::imat3x3 output(0);
-    output[0][i_of_non_zero_entry_1st_row] = val0;
-    output[1][i_of_non_zero_entry_2nd_row] = val1;
-    output[2][i_of_non_zero_entry_3rd_row] = val2;
+    output[i_of_non_zero_entry_1st_row][0] = val0;
+    output[i_of_non_zero_entry_2nd_row][1] = val1;
+    output[i_of_non_zero_entry_3rd_row][2] = val2;
 
     return output;
 }
@@ -186,10 +187,29 @@ struct InterVoxRepr {
 };
 
 std::vector<Voxel> convert_to_flat_3d_voxel_vec(const std::vector<InterVoxRepr> intervox_vec, const std::array<Voxel, 256> &voxel_palette) {
+    glm::ivec3 min{INT32_MAX};
+    glm::ivec3 max{INT32_MIN};
+    std::vector<Voxel> output;
+    
     for(const auto& inter_vox : intervox_vec) {
-        Voxel voxel = voxel_palette[inter_vox.color_index];
+        min = glm::min(min,inter_vox.vox_pos);
+        max = glm::max(max,inter_vox.vox_pos);
+
+        glm::ivec3 dimensions = (max - min) + 1;
+        size_t new_size = static_cast<size_t>(dimensions.x * dimensions.y * dimensions.z);
+        if(new_size > output.size()){
+            output.resize(new_size);
+        }
+        glm::ivec3 norm_vox_pos = inter_vox.vox_pos - min;
+        int vox_pos_x = norm_vox_pos.x;
+        int vox_pos_y = norm_vox_pos.y;
+        int vox_pos_z = norm_vox_pos.z;
+        int width = dimensions.x;
+        int height = dimensions.y;
+        size_t index = static_cast<size_t>(vox_pos_x + vox_pos_y * width + vox_pos_z * (width * height));
+        output[index] = voxel_palette[inter_vox.color_index];
     }
-    return {};
+    return output;
 }
 
 //https://en.cppreference.com/cpp/utility/variant/visit
@@ -238,7 +258,7 @@ void DFS(
 
 } // namespace
 
-std::expected<std::vector<Model>, parse_error>
+std::expected<std::vector<Voxel>, parse_error>
     parse_vox_file(std::filesystem::path file_path, const std::array<Voxel, 256>& voxel_palette) {
     if (file_path.extension() != ".vox") {
         Log::error(
@@ -323,9 +343,11 @@ std::expected<std::vector<Model>, parse_error>
             sizeof(Chunk) + chunk->n_bytes_chunk + chunk->n_bytes_children;
     }
 
-    std::vector<InterVoxRepr> internal_voxes;
+    std::vector<InterVoxRepr> internal_voxels;
     Transformation transf;
-    DFS(nodes, models, transf, 0, &internal_voxes);
+    DFS(nodes, models, transf, 0, &internal_voxels);
     
-    return models;
+    
+
+    return convert_to_flat_3d_voxel_vec(internal_voxels, voxel_palette);
 }

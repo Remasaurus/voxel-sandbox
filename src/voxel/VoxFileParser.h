@@ -107,6 +107,7 @@ struct Transformation {
 };
 
 struct TransformNode {
+    TransformNode() = default;
     int32_t node_id;
     std::unordered_map<std::string, std::string> node_attributes;
     int32_t child_node_id;
@@ -147,5 +148,5 @@ enum class parse_error {
     main_chunk_has_bytes
 };
 
-[[nodiscard]] std::expected<std::vector<Model>, parse_error>
+[[nodiscard]] std::expected<std::vector<Voxel>, parse_error>
     parse_vox_file(std::filesystem::path file_path, const std::array<Voxel, 256>& voxel_palette);
