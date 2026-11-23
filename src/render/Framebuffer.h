@@ -25,7 +25,7 @@ private:
     unsigned width_ = 0;
     unsigned height_ = 0;
 
-    unsigned framebuffer;
-    unsigned depth_stencil;
+    unsigned framebuffer = 0;
+    unsigned depth_stencil = 0;
     Texture color_texture;
 };
