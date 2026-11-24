@@ -343,13 +343,19 @@ std::expected<std::vector<Voxel>, parse_error>
         offset +=
             sizeof(Chunk) + chunk->n_bytes_chunk + chunk->n_bytes_children;
     }
-    if (nodes.empty()) {
-        // TODO just combine the models? 
-    }
-
     std::vector<InterVoxRepr> internal_voxels;
-    Transformation transf;
-    DFS(nodes, models, transf, 0, &internal_voxels);
+    // no transform nodes so just combining all the models into one
+    if (nodes.empty()) {
+        for(const auto& model : models){
+            for(const auto& voxel : model.voxels) {
+                glm::ivec3 vox_pos = {voxel.x, voxel.y, voxel.z};
+                internal_voxels.push_back({vox_pos, voxel.color_index});
+            }
+        }
+    } else {
+        Transformation transf;
+        DFS(nodes, models, transf, 0, &internal_voxels);
+    }
     
     return convert_to_flat_3d_voxel_vec(internal_voxels, voxel_palette);
 }
