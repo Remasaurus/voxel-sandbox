@@ -7,7 +7,12 @@
 #include "Voxel.h"
 #include <glm/mat3x3.hpp>
 #include <glm/vec3.hpp>
+
+// Implements the following standard:
 // https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox.txt
+// https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
+// https://paulbourke.net/dataformats/vox/
+// the parse_vox_file function returns a flat3d array of voxels
 
 struct Header {
     char magic[4];
@@ -74,13 +79,6 @@ struct VoxVoxel {
     uint8_t y;
     uint8_t z;
     uint8_t color_index;
-
-    std::pair<Voxel, size_t> to_voxel(const std::array<Voxel, 256> &voxel_palette, size_t width, size_t height
-    ) {
-        Voxel voxel = voxel_palette[color_index];
-        size_t index = x + y * width + z * (width * height);
-        return {voxel, index};
-    }
 };
 
 struct Size {
