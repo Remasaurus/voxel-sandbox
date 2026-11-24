@@ -11,6 +11,7 @@ public:
     void bind(unsigned target);
     void write(unsigned offset, unsigned size, const void* data);
     void bind_buffer_base(unsigned binding);
+    unsigned size() { return buffer_size_; }
 
 
 private:

@@ -104,8 +104,10 @@ void Application::render_options_menu(
         ImGui::SliderFloat("Rotation speed", &rotation_speed, 0, 1);
         ImGui::SliderFloat("FOV", &camera.fov, 10, 120);
         ImGui::SliderFloat("Pixels per ray", &pixels_per_ray, 1, 4);
-        ImGui::SliderInt("Light Bounces", &renderer.light_bounces, 0, 5);
-        ImGui::SliderInt("Render distance", &renderer.render_distance, 10, 200);
+        // ImGui::SliderScalar("Light Bounces", &renderer.light_bounces, 0u, 5u);
+        unsigned min_render_distance = 50, max_render_distance = 300;
+        ImGui::SliderScalar("Render distance", ImGuiDataType_U32, &renderer.render_distance, &min_render_distance, &max_render_distance);
+
         ImGui::Checkbox("Heatmap", &renderer.heatmap);
 
         if (ImGui::Button("Quit Game")) {

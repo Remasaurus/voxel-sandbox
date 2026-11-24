@@ -3,6 +3,7 @@
 #include "Camera.h"
 #include "Framebuffer.h"
 #include "Shader.h"
+#include "Buffer.h"
 #include "../voxel/VoxelMap.h"
 #include "../Window.h"
 
@@ -15,8 +16,8 @@ public:
 
     void render(const Window& window, const Camera &camera);
 
-    int render_distance = 100;
-    int light_bounces = 2;
+    unsigned render_distance = 100;
+    unsigned light_bounces = 2;
     bool heatmap = false;
 
     struct {
@@ -33,4 +34,9 @@ private:
     Shader blit_shader;
     unsigned empty_vao;
     Texture tex;
+
+    Buffer brick_grid;
+    Buffer brick_map;
+    Buffer voxel_data;
+    Buffer request_buffer;
 };

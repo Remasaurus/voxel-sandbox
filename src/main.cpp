@@ -1,21 +1,30 @@
 #include "Application.h"
 #include "Log.h"
+#include <GL/gl.h>
 #include <GL/glext.h>
 #include <cstdlib>
 #include <immintrin.h>
 #include <xmmintrin.h>
 
 namespace {
-const char *gl_string(GLenum var) {
-    return reinterpret_cast<const char *>(glGetString(var));
+const char *gl_string(GLenum name) {
+    return reinterpret_cast<const char *>(glGetString(name));
+}
+int gl_int(GLenum name) {
+    int v;
+    glGetIntegerv(name, &v);
+    return v;
 }
 
 void log_gl() {
-    Log::info("OpenGL vendor:       {}", gl_string(GL_VENDOR));
-    Log::info("OpenGL renderer:     {}", gl_string(GL_RENDERER));
-    Log::info("OpenGL version:      {}", gl_string(GL_VERSION));
+    Log::info("OpenGL vendor:        {}", gl_string(GL_VENDOR));
+    Log::info("OpenGL renderer:      {}", gl_string(GL_RENDERER));
+    Log::info("OpenGL version:       {}", gl_string(GL_VERSION));
     Log::info(
-        "OpenGL glsl version: {}", gl_string(GL_SHADING_LANGUAGE_VERSION)
+        "OpenGL glsl version:  {}", gl_string(GL_SHADING_LANGUAGE_VERSION)
+    );
+    Log::info(
+        "OpenGL max buffer bindings: {}", gl_int(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS)
     );
 }
 } // namespace

@@ -2,17 +2,48 @@
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-layout(rgba32f, binding = 0) uniform writeonly image2D albedo;
 
-// layout(std430) readonly buffer ssbo1 {
-//     uint voxels[];
-// }
+struct Brick {
+    uint solid_mask[16]; // 16 uints * 4bytes_per_uint * 8_bits_per_byte = 512 flags
+    uint voxel_offset;
+};
 
+
+layout(std430, binding = 0) readonly buffer ChunkGrid {
+    uint chunk_grid[];
+};
+
+layout(std430, binding = 1) readonly buffer BrickGrid {
+    uint brick_grid[];
+};
+
+layout(std430, binding = 2) readonly buffer BrickMap {
+    Brick brick_map[];
+};
+
+layout(std430, binding = 3) readonly buffer VoxelData {
+    uint voxel_data[];
+};
+
+layout(std430, binding = 4) readonly buffer RequestBuffer {
+    uint request_buffer[];
+};
+
+layout(rgba32f) uniform writeonly image2D albedo;
 uniform float focal_length;
 uniform ivec3 pos;
 uniform vec3 x_axis;
 uniform vec3 y_axis;
 uniform vec3 dir;
+uniform uint max_render_distance;
+
+uint to_grid_index(uint x, uint y, uint z) {
+    return x + y * max_render_distance + z * max_render_distance * max_render_distance;
+}
+
+bool is_solid(uint solid_mask[16], uint idx) {
+    return bool(solid_mask[idx >> 4] & (1 << (idx & 15)));
+}
 
 int ambient_occlusion_corner(int side1, int side2, int corner) {
     // if (side1 && side2) {
@@ -23,15 +54,14 @@ int ambient_occlusion_corner(int side1, int side2, int corner) {
     return (1 - side1 * side2) * (3 - (side1 + side2 + corner));
 }
 
-struct Brick {
-    uint solid_mask[16];
-    uint color_pointer;
-};
+
+
+
 
 struct HitResult {
     vec3 normal;
-    int material;
-    int steps;
+    uint material;
+    uint steps;
 };
 
 HitResult cast_ray(vec3 origin, vec3 dir) {
@@ -60,6 +90,8 @@ void main() {
 
     vec3 dir = ray_direction(texelCoord, dims);
     HitResult result = cast_ray(pos, dir);
+
+    uint v = brick_grid[0];
 
     imageStore(albedo, texelCoord, vec4(result.normal, 1));
 }

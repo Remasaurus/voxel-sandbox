@@ -14,6 +14,17 @@ Renderer::Renderer(VoxelMap& voxel_map): voxel_map_(voxel_map) {
 
     raycast_shader = create_compute_shader("resources/raycast.comp");
 
+    unsigned full_render_length = 2 * render_distance;
+    unsigned brick_grid_cell_count = full_render_length * full_render_length * full_render_length;
+    unsigned brick_grid_byte_count = brick_grid_cell_count * 4;
+    brick_grid = Buffer(brick_grid_byte_count);
+
+    std::vector<std::uint32_t> grid_pointers(brick_grid_cell_count, 128);
+    brick_grid.write(0, brick_grid_byte_count, grid_pointers.data());
+    brick_grid.bind_buffer_base(1);
+
+    Log::info("Brick grid is {} bytes ({} MB)", brick_grid_byte_count, brick_grid_byte_count / 1000000);
+
     Log::info("Renderer has been setup");
 }
 
