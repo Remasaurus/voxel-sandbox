@@ -53,12 +53,6 @@ static_assert(BrickIndexer::to_index(9, 0, 0) == 1);
 class Brick {
 public:
     static constexpr std::uint16_t num_voxels = BrickIndexer::max_volume;
-
-    Voxel &at(std::uint16_t index) { return voxels[index]; }
-    Voxel &operator [](std::uint16_t index) { return voxels[index]; }
-    bool is_dirty() { return dirty; }
-
-private:
     bool dirty = false;
     std::array<Voxel, num_voxels> voxels;
 
