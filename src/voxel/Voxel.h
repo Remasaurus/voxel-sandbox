@@ -18,6 +18,7 @@ struct Color {
     uint8_t alpha;
 };
 
+
 enum class Material : std::uint8_t {
     Air,
 

@@ -43,12 +43,12 @@ Brick &VoxelMap::get_brick(const glm::ivec3 &pos) {
 
 Voxel VoxelMap::get(const glm::ivec3 &pos) {
     Brick &brick = get_brick(pos >> BrickIndexer::shift);
-    return brick.at(BrickIndexer::to_index(pos));
+    return brick.voxels[BrickIndexer::to_index(pos)];
 }
 
 void VoxelMap::set(const glm::ivec3 &pos, Voxel voxel) {
     Brick &brick = get_brick(pos >> BrickIndexer::shift);
-    brick.at(BrickIndexer::to_index(pos)) = voxel;
+    brick.voxels[BrickIndexer::to_index(pos)] = voxel;
 }
 
 int VoxelMap::step_level(const glm::ivec3 &pos) {
@@ -60,14 +60,14 @@ int VoxelMap::step_level(const glm::ivec3 &pos) {
     }
 
     k = BrickIndexer::shift;
-    int index = SectorIndexer::to_index(pos >> k);
+    unsigned index = SectorIndexer::to_index(pos >> k);
     if (!result->second.exists(index)) {
         return k;
     }
 
     Brick &brick = result->second.at(index);
 
-    return brick.at(BrickIndexer::to_index(pos)).isAir() ? 0 : -1;
+    return brick.voxels[BrickIndexer::to_index(pos)].isAir() ? 0 : -1;
 }
 
 std::optional<HitResult>
