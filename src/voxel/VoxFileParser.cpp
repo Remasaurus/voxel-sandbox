@@ -65,28 +65,6 @@ std::vector<VoxVoxel>
     return output;
 }
 
-std::vector<Voxel> parse_voxels_new(
-    size_t offset, const std::vector<std::byte> &file_buffer,
-    const std::array<Voxel, 256> &voxel_palette, size_t size, size_t width, size_t height
-) {
-    uint32_t n_voxels{};
-    std::memcpy(&n_voxels, file_buffer.data() + offset, sizeof(uint32_t));
-
-    offset += sizeof(uint32_t);
-    std::vector<Voxel> output{size, Voxel{}};
-
-    for (size_t i = 0; i < n_voxels; i++) {
-        size_t vox_offset = offset + i * sizeof(VoxVoxel);
-        VoxVoxel vox_voxel {};
-        std::memcpy(&vox_voxel, file_buffer.data() + vox_offset, sizeof(VoxVoxel));
-        std::pair<Voxel, size_t> voxel_index_pair = vox_voxel.to_voxel(voxel_palette,  width, height);
-
-        output[voxel_index_pair.second] = voxel_index_pair.first;
-    }
-
-    return output;
-}
-
 std::string parse_string_type(const std::vector<std::byte> &file_buffer, size_t *offset) {
     int32_t buffer_size = load<int32_t>(file_buffer, offset);
 
@@ -328,8 +306,6 @@ std::expected<std::vector<Voxel>, parse_error>
                 parse_voxels(offset + sizeof(Chunk), file_buffer);
                 auto& model_size = models.back().bounds;
                 size_t size = model_size.x * model_size.y * model_size.z;
-                //TODO WIP
-                parse_voxels_new(offset + sizeof(Chunk), file_buffer, voxel_palette, size, model_size.x, model_size.y);
 
         } else if (chunk_id == "RGBA") {
             Log::info("File has custom RGBA pallet (ignored)");
@@ -346,8 +322,8 @@ std::expected<std::vector<Voxel>, parse_error>
     std::vector<InterVoxRepr> internal_voxels;
     // no transform nodes so just combining all the models into one
     if (nodes.empty()) {
-        for(const auto& model : models){
-            for(const auto& voxel : model.voxels) {
+        for (const auto &model : models) {
+            for (const auto &voxel : model.voxels) {
                 glm::ivec3 vox_pos = {voxel.x, voxel.y, voxel.z};
                 internal_voxels.push_back({vox_pos, voxel.color_index});
             }
@@ -356,6 +332,6 @@ std::expected<std::vector<Voxel>, parse_error>
         Transformation transf;
         DFS(nodes, models, transf, 0, &internal_voxels);
     }
-    
+
     return convert_to_flat_3d_voxel_vec(internal_voxels, voxel_palette);
 }

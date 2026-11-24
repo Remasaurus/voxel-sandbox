@@ -96,9 +96,9 @@ struct Model {
 };
 
 struct Frame {
-    int8_t rotation; 
-    std::array<int32_t,3> translation;
-    int32_t frame_index;
+    int8_t rotation = 4; 
+    std::array<int32_t,3> translation {0,0,0};
+    int32_t frame_index = 0;
 };
 
 struct Transformation {
