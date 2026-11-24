@@ -12,16 +12,13 @@ Brick TerrainGenerator::get_brick(const glm::ivec3& pos) {
 
     return output_brick;
 }
-Sector TerrainGenerator::get_sector(const glm::ivec3& pos) {
-    (void)pos;
-    return Sector{};
-}
 void TerrainGenerator::fill_ground(Brick *brick, const glm::ivec3& voxel_min) {
     glm::ivec3 voxel_max = voxel_min | BrickIndexer::mask;
     if(voxel_max.y < ground_y) {
         brick->voxels.fill({1});
         return;
     }
+    brick->voxels.fill({0});
     for (int z = voxel_min.z; z <= voxel_max.z; z++)
         for (int y = voxel_min.y; y < voxel_max.y; y++) {
             if (y > ground_y) {

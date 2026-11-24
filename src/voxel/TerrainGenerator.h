@@ -10,7 +10,6 @@ public:
     TerrainGenerator() = default;
 
     Brick get_brick(const glm::ivec3& pos);
-    Sector get_sector(const glm::ivec3& pos);
 
 private:
     static constexpr int ground_y = 0;
