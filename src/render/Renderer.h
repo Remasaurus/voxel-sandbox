@@ -3,13 +3,14 @@
 #include "Camera.h"
 #include "Framebuffer.h"
 #include "Shader.h"
+#include "../voxel/VoxelMap.h"
 #include "../Window.h"
 
 void enable_opengl_debug();
 
 class Renderer {
 public:
-    Renderer();
+    Renderer(VoxelMap& voxel_map);
     ~Renderer();
 
     void render(const Window& window, const Camera &camera);
@@ -26,6 +27,8 @@ public:
 private:
     Shader raycast_shader;
     Framebuffer raycast_framebuffer;
+
+    VoxelMap& voxel_map_;
 
     Shader blit_shader;
     unsigned empty_vao;
