@@ -4,7 +4,11 @@ layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 layout(rgba32f, binding = 0) uniform writeonly image2D albedo;
 
-uniform float fov;
+// layout(std430) readonly buffer ssbo1 {
+//     uint voxels[];
+// }
+
+uniform float focal_length;
 uniform ivec3 pos;
 uniform vec3 x_axis;
 uniform vec3 y_axis;
@@ -19,6 +23,33 @@ int ambient_occlusion_corner(int side1, int side2, int corner) {
     return (1 - side1 * side2) * (3 - (side1 + side2 + corner));
 }
 
+struct Brick {
+    uint solid_mask[16];
+    uint color_pointer;
+};
+
+struct HitResult {
+    vec3 normal;
+    int material;
+    int steps;
+};
+
+HitResult cast_ray(vec3 origin, vec3 dir) {
+    return HitResult(
+        dir,
+        0,
+        10
+    );
+}
+
+vec3 ray_direction(vec2 texelCoord, vec2 dims) {
+    vec2 p = (texelCoord - dims * 0.5) / dims.y;
+    return normalize(p.x * x_axis + p.y * y_axis + dir * focal_length);
+
+    // vec2 p = vec2(texelCoord * 2 - dims) / dims.y;
+    // return normalize(p.x * x_axis + p.y * y_axis + dir / fov);
+}
+
 void main() {
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
     ivec2 dims = imageSize(albedo);
@@ -27,12 +58,8 @@ void main() {
         return;
     }
 
-    vec2 p = vec2(
-            float(texelCoord.x * 2 - dims.x) / dims.x,
-            float(texelCoord.y * 2 - dims.y) / dims.y
-        );
+    vec3 dir = ray_direction(texelCoord, dims);
+    HitResult result = cast_ray(pos, dir);
 
-    vec3 dir = normalize(p.x * x_axis + p.y * y_axis + dir * fov);
-
-    imageStore(albedo, texelCoord, vec4(dir.x, dir.y, dir.z, 1));
+    imageStore(albedo, texelCoord, vec4(result.normal, 1));
 }
