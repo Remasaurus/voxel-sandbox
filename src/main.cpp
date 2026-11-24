@@ -17,14 +17,17 @@ int gl_int(GLenum name) {
 }
 
 void log_gl() {
-    Log::info("OpenGL vendor:        {}", gl_string(GL_VENDOR));
-    Log::info("OpenGL renderer:      {}", gl_string(GL_RENDERER));
-    Log::info("OpenGL version:       {}", gl_string(GL_VERSION));
+    Log::info("OpenGL vendor:       {}", gl_string(GL_VENDOR));
+    Log::info("OpenGL renderer:     {}", gl_string(GL_RENDERER));
+    Log::info("OpenGL version:      {}", gl_string(GL_VERSION));
     Log::info(
-        "OpenGL glsl version:  {}", gl_string(GL_SHADING_LANGUAGE_VERSION)
+        "OpenGL glsl version: {}", gl_string(GL_SHADING_LANGUAGE_VERSION)
     );
     Log::info(
         "OpenGL max buffer bindings: {}", gl_int(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS)
+    );
+    Log::info(
+        "OpenGL max buffer bindings: {}", gl_int(GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS)
     );
 }
 } // namespace
