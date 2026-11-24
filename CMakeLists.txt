@@ -75,6 +75,7 @@ target_sources(
         src/render/debug.cpp
         src/render/Shader.cpp
         src/render/Texture.cpp
+        src/render/Buffer.cpp
 
         src/voxel/VoxelLogic.cpp
         src/voxel/VoxFileParser.cpp
