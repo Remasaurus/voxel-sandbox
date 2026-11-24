@@ -1,11 +1,11 @@
 #include <glad/gl.h>
 #include <imgui.h>
 
-#include "../Log.h"
 #include "Renderer.h"
+#include "../Log.h"
 
 unsigned texture1;
-Renderer::Renderer() {
+Renderer::Renderer(VoxelMap& voxel_map): voxel_map_(voxel_map) {
     Log::info("Initializing shaders");
 
     blit_shader =
@@ -35,7 +35,7 @@ void Renderer::render(const Window& window, const Camera &camera) {
     raycast_shader.set_uniform("x_axis", camera.right);
     raycast_shader.set_uniform("y_axis", camera.up);
     raycast_shader.set_uniform("dir", camera.front);
-    raycast_shader.set_uniform("fov", glm::radians(camera.fov));
+    raycast_shader.set_uniform("focal_length", 1 / std::tanf(0.5 * glm::radians(camera.fov)));
 
     raycast_framebuffer.as_texture().bind_image_texture(0, GL_WRITE_ONLY, GL_RGBA32F);
     glDispatchCompute(camera.size.x, camera.size.y, 1);
