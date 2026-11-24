@@ -15,15 +15,15 @@ public:
     void bind_image_texture(unsigned unit, unsigned access, unsigned format);
 
     void write(
-        unsigned format, void *data
+        unsigned format, const void *data
     );
     void write(
         unsigned width, unsigned height,
-        unsigned format, void *data
+        unsigned format, const void *data
     );
     void write(
         unsigned x_offset, unsigned y_offset, unsigned width, unsigned height,
-        unsigned format, void *data
+        unsigned format, const void *data
     );
 
     void set_parameters(

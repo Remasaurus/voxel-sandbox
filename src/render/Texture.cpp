@@ -36,25 +36,26 @@ Texture& Texture::operator=(Texture && rhs) {
 void Texture::delete_texture() {
     if (texture) {
         glDeleteTextures(1, &texture);
+        texture = 0;
     }
 }
 
 void Texture::write(
-    unsigned format, void *data
+    unsigned format, const void *data
 ) { 
     write(0, 0, width_, height_, format, data);
 }
 
 void Texture::write(
     unsigned width, unsigned height,
-    unsigned format, void *data
+    unsigned format, const void *data
 ) { 
     write(0, 0, width, height, format, data);
 }
 
 void Texture::write(
     unsigned x_offset, unsigned y_offset, unsigned width, unsigned height,
-    unsigned format, void *data
+    unsigned format, const void *data
 ) {
     assert(x_offset <= std::numeric_limits<int>::max());
     assert(y_offset <= std::numeric_limits<int>::max());
