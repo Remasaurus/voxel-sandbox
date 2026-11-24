@@ -107,7 +107,6 @@ struct Transformation {
 };
 
 struct TransformNode {
-    TransformNode() = default;
     int32_t node_id;
     std::unordered_map<std::string, std::string> node_attributes;
     int32_t child_node_id;

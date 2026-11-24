@@ -186,27 +186,28 @@ struct InterVoxRepr {
     uint8_t color_index;
 };
 
+// TODO do i need to return dimensions? 
 std::vector<Voxel> convert_to_flat_3d_voxel_vec(const std::vector<InterVoxRepr> intervox_vec, const std::array<Voxel, 256> &voxel_palette) {
     glm::ivec3 min{INT32_MAX};
     glm::ivec3 max{INT32_MIN};
-    std::vector<Voxel> output;
     
     for(const auto& inter_vox : intervox_vec) {
         min = glm::min(min,inter_vox.vox_pos);
         max = glm::max(max,inter_vox.vox_pos);
+    }
+    glm::ivec3 dimensions = (max - min) + 1;
+    size_t size_flat_3d_vec = static_cast<size_t>(dimensions.x * dimensions.y * dimensions.z);
+    std::vector<Voxel> output(size_flat_3d_vec);
 
-        glm::ivec3 dimensions = (max - min) + 1;
-        size_t new_size = static_cast<size_t>(dimensions.x * dimensions.y * dimensions.z);
-        if(new_size > output.size()){
-            output.resize(new_size);
-        }
-        glm::ivec3 norm_vox_pos = inter_vox.vox_pos - min;
-        int vox_pos_x = norm_vox_pos.x;
-        int vox_pos_y = norm_vox_pos.y;
-        int vox_pos_z = norm_vox_pos.z;
+    for(const auto& inter_vox : intervox_vec) {
+        glm::ivec3 normalized_vox_pos = inter_vox.vox_pos - min;
+        int vox_pos_x = normalized_vox_pos.x;
+        int vox_pos_y = normalized_vox_pos.y;
+        int vox_pos_z = normalized_vox_pos.z;
         int width = dimensions.x;
         int height = dimensions.y;
-        size_t index = static_cast<size_t>(vox_pos_x + vox_pos_y * width + vox_pos_z * (width * height));
+        
+        size_t index = static_cast<size_t>(vox_pos_x + vox_pos_y * width + vox_pos_z  * (width * height));
         output[index] = voxel_palette[inter_vox.color_index];
     }
     return output;
@@ -342,12 +343,13 @@ std::expected<std::vector<Voxel>, parse_error>
         offset +=
             sizeof(Chunk) + chunk->n_bytes_chunk + chunk->n_bytes_children;
     }
+    if (nodes.empty()) {
+        // TODO just combine the models? 
+    }
 
     std::vector<InterVoxRepr> internal_voxels;
     Transformation transf;
     DFS(nodes, models, transf, 0, &internal_voxels);
     
-    
-
     return convert_to_flat_3d_voxel_vec(internal_voxels, voxel_palette);
 }
