@@ -5,21 +5,19 @@
 VoxelMap::VoxelMap(TerrainGenerator& generator)
     : terrain_generator(generator) {}
 
-Voxel &Brick::at(std::uint16_t index) { return voxels.at(index); }
-
 Brick &Sector::at(std::uint8_t index) {
-    std::uint8_t slot = brick_indices.at(index);
+    std::uint8_t slot = brick_indices[index];
 
     if (slot != invalid_index) {
-        return bricks.at(slot);
+        return bricks[slot];
     }
 
-    brick_indices.at(index) = bricks.size();
+    brick_indices[index] = bricks.size();
     return bricks.emplace_back();
 }
 
 bool Sector::exists(std::uint8_t index) {
-    return brick_indices.at(index) != invalid_index;
+    return brick_indices[index] != invalid_index;
 }
 
 Sector::Sector() { brick_indices.fill(invalid_index); }
