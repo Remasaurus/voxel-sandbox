@@ -55,8 +55,6 @@ public:
     static constexpr std::uint16_t num_voxels = BrickIndexer::max_volume;
     bool dirty = false;
     std::array<Voxel, num_voxels> voxels;
-
-    friend class VoxelMap; // will control dirty flag;
 };
 
 // Sector is a 4x4x4 set of Bricks
@@ -161,7 +159,7 @@ public:
                                 for (int z = first_voxel.z; z <= last_voxel.z; z++) {
                                     for (int y = first_voxel.y; y <= last_voxel.y; y++) {
                                         for (int x = first_voxel.x; x <= last_voxel.x; x++) {
-                                            std::invoke(visit, glm::ivec3(x, y, z), brick.at(BrickIndexer::to_index(x, y, z)));
+                                            std::invoke(visit, glm::ivec3(x, y, z), brick.voxels[BrickIndexer::to_index(x, y, z)]);
                                         }
                                     }
                                 }

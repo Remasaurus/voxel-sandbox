@@ -22,6 +22,7 @@ enum class Material : std::uint8_t {
     Air,
 
     // Solids
+    Dirt,
     Wood,
     Leaf,
 
