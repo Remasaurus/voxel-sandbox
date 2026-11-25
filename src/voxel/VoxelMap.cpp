@@ -5,6 +5,17 @@
 VoxelMap::VoxelMap(TerrainGenerator& generator)
     : terrain_generator(generator) {}
 
+void create_solid_mask(const Brick& brick, std::uint32_t* dest) {
+    // i < 16
+    for (unsigned i = 0; i < Brick::num_voxels / 32; i++) {
+        std::uint32_t mask = 0;
+        for (unsigned j = 0; j < 32; j++) {
+            mask |= static_cast<unsigned>(brick.voxels[j + i * 32].data != 0) << j;
+        }
+        dest[i] = mask;
+    }
+}
+
 Brick &Sector::at(std::uint8_t index) {
     std::uint8_t slot = brick_indices[index];
 

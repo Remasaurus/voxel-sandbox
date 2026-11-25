@@ -25,20 +25,21 @@ layout(std430, binding = 3) readonly buffer VoxelData {
     uint voxel_data[];
 };
 
-layout(std430, binding = 4) readonly buffer RequestBuffer {
-    uint request_buffer[];
+layout(std430, binding = 4) buffer RequestBuffer {
+    uint count;
+    int request_buffer[];
 };
 
 layout(rgba32f) uniform writeonly image2D albedo;
 uniform float focal_length;
-uniform ivec3 pos;
+uniform vec3 pos;
 uniform vec3 x_axis;
 uniform vec3 y_axis;
 uniform vec3 dir;
-uniform uint max_render_distance;
+uniform uint render_distance;
 
 uint to_grid_index(uint x, uint y, uint z) {
-    return x + y * max_render_distance + z * max_render_distance * max_render_distance;
+    return x + y * render_distance + z * render_distance * render_distance;
 }
 
 bool is_solid(uint solid_mask[16], uint idx) {
@@ -54,17 +55,44 @@ int ambient_occlusion_corner(int side1, int side2, int corner) {
     return (1 - side1 * side2) * (3 - (side1 + side2 + corner));
 }
 
-
-
-
-
 struct HitResult {
     vec3 normal;
     uint material;
     uint steps;
 };
 
+int get_step_size(ivec3 pos, vec3 dir) {
+    return 1;
+}
+
 HitResult cast_ray(vec3 origin, vec3 dir) {
+    vec3 inv_dir = 1.0 / dir;
+    ivec3 pos = ivec3(floor(origin));
+    vec3 t_start = (step(0, dir) - origin) * inv_dir;
+
+    while (true) {
+        vec3 ts = t_start + vec3(pos) * inv_dir;
+        float t = min(min(ts.x, ts.y), ts.z) + 0.0001;
+        vec3 hit_pos = origin * t * dir;
+        pos = ivec3(floor(hit_pos));
+
+        if (any(greaterThan(pos, ivec3(render_distance)))) {
+            break;
+        }
+
+        int step_size = get_step_size(pos, dir);
+
+        if (step_size == 0) {
+            break;
+        }
+
+        // step_size is power of 2
+        int m = step_size - 1;
+        pos.x = dir.x < 0 ? (pos.x & ~m) : (pos.x | m);
+        pos.y = dir.y < 0 ? (pos.y & ~m) : (pos.y | m);
+        pos.z = dir.z < 0 ? (pos.z & ~m) : (pos.z | m);
+    }
+
     return HitResult(
         dir,
         0,
@@ -90,8 +118,6 @@ void main() {
 
     vec3 dir = ray_direction(texelCoord, dims);
     HitResult result = cast_ray(pos, dir);
-
-    uint v = brick_grid[0];
 
     imageStore(albedo, texelCoord, vec4(result.normal, 1));
 }

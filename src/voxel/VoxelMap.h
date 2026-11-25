@@ -49,6 +49,7 @@ static_assert(BrickIndexer::to_index(7, 0, 0) == 7);
 static_assert(BrickIndexer::to_index(8, 0, 0) == 0);
 static_assert(BrickIndexer::to_index(9, 0, 0) == 1);
 
+
 // Brick is a 8x8x8 set of voxels
 class Brick {
 public:
@@ -56,6 +57,8 @@ public:
     bool dirty = false;
     std::array<Voxel, num_voxels> voxels;
 };
+
+void create_solid_mask(const Brick& brick, std::uint32_t dest[Brick::num_voxels / 32]);
 
 // Sector is a 4x4x4 set of Bricks
 class Sector {

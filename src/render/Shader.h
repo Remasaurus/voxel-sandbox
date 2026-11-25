@@ -1,5 +1,4 @@
 #include <filesystem>
-#include <string_view>
 #include <glm/glm.hpp>
 
 
@@ -17,6 +16,7 @@ public:
     void use();
 
 	void set_uniform(const std::string& name, int value);
+	void set_uniform(const std::string& name, unsigned value);
 	void set_uniform(const std::string& name, float value);
 	void set_uniform(const std::string& name, const glm::ivec2& value);
 	void set_uniform(const std::string& name, const glm::vec2& value);

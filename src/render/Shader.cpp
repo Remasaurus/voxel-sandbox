@@ -24,6 +24,9 @@ Shader create_pixel_shader(const std::filesystem::path& vert_path, const std::fi
 void Shader::set_uniform(const std::string& name, int value) {
 	glUniform1i(glGetUniformLocation(program, name.c_str()), value);
 }
+void Shader::set_uniform(const std::string& name, unsigned value) {
+	glUniform1ui(glGetUniformLocation(program, name.c_str()), value);
+}
 void Shader::set_uniform(const std::string& name, float value) {
 	glUniform1f(glGetUniformLocation(program, name.c_str()), value);
 }
@@ -73,6 +76,7 @@ void Shader::add_stage(
 ) {
     std::string code = read_file(path);
 
+    Log::info("Compiling {}", path.c_str());
     unsigned shader = glCreateShader(shader_type);
 
     // Cannot take address of r-value,

@@ -35,6 +35,14 @@ void Buffer::write(unsigned offset, unsigned size, const void* data) {
         buffer, offset, size, data
     );
 }
+void Buffer::read(unsigned offset, unsigned size, void* data) {
+    assert(buffer);
+    assert(offset + size <= buffer_size_);
+    glGetNamedBufferSubData(
+        buffer, offset, size, data
+    );
+}
+
 void Buffer::bind_buffer_base(unsigned binding) {
     assert(buffer);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, buffer);

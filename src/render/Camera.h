@@ -23,6 +23,7 @@ public:
     void move(const glm::vec3 direction, const float deltatime);
 
     float fov = 45.0f;
+    unsigned render_distance = 16;
 
     static constexpr float NEAR_CLIP_PLANE = 0.1f;
     static constexpr float FAR_CLIP_PLANE = 100.0f;

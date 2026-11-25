@@ -1,0 +1,39 @@
+#version 460 core
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+
+struct Brick {
+    uint solid_mask[16]; // 16 uints * 4bytes_per_uint * 8_bits_per_byte = 512 flags
+    uint voxel_offset;
+};
+
+
+layout(std430, binding = 0) writeonly buffer ChunkGrid {
+    uint chunk_grid[];
+};
+
+layout(std430, binding = 1) writeonly buffer BrickGrid {
+    uint brick_grid[];
+};
+
+layout(std430, binding = 2) writeonly buffer BrickMap {
+    Brick brick_map[];
+};
+
+layout(std430, binding = 3) writeonly buffer VoxelData {
+    uint voxel_data[];
+};
+
+layout(std430, binding = 4) readonly buffer RequestBuffer {
+    uint count;
+    int request_buffer[];
+};
+
+layout(std430, binding = 5) readonly buffer UploadBuffer {
+    int uploads;
+};
+
+void main() {
+
+}
