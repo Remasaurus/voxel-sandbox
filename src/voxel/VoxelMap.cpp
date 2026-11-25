@@ -16,7 +16,7 @@ void create_solid_mask(const Brick& brick, std::uint32_t* dest) {
     }
 }
 
-Brick &Sector::at(std::uint8_t index) {
+Brick &Chunk::at(std::uint8_t index) {
     std::uint8_t slot = brick_indices[index];
 
     if (slot != invalid_index) {
@@ -27,11 +27,11 @@ Brick &Sector::at(std::uint8_t index) {
     return bricks.emplace_back();
 }
 
-bool Sector::exists(std::uint8_t index) {
+bool Chunk::exists(std::uint8_t index) {
     return brick_indices[index] != invalid_index;
 }
 
-Sector::Sector() { brick_indices.fill(invalid_index); }
+Chunk::Chunk() { brick_indices.fill(invalid_index); }
 
 void VoxelMap::mark_brick_dirty(const glm::ivec3& brick_pos) {
     Brick& brick = get_brick(brick_pos);
@@ -41,15 +41,15 @@ void VoxelMap::mark_brick_dirty(const glm::ivec3& brick_pos) {
     dirty_bricks.emplace_back(brick_pos, brick);
 }
 
-Sector &VoxelMap::get_sector(const glm::ivec3 &pos) {
+Chunk &VoxelMap::get_sector(const glm::ivec3 &pos) {
     // TODO: Initialize using some kind of TerrainGenerator
     return sectors[pos];
 }
 
 
 Brick &VoxelMap::get_brick(const glm::ivec3 &pos) {
-    Sector &sector = get_sector(pos >> SectorIndexer::shift);
-    return sector.at(SectorIndexer::to_index(pos));
+    Chunk &sector = get_sector(pos >> ChunkIndexer::shift);
+    return sector.at(ChunkIndexer::to_index(pos));
 }
 
 Voxel VoxelMap::get(const glm::ivec3 &pos) {
@@ -63,7 +63,7 @@ void VoxelMap::set(const glm::ivec3 &pos, Voxel voxel) {
 }
 
 int VoxelMap::step_level(const glm::ivec3 &pos) {
-    int k = SectorIndexer::shift + BrickIndexer::shift;
+    int k = ChunkIndexer::shift + BrickIndexer::shift;
     auto result = sectors.find(pos >> k);
 
     if (result == sectors.end()) {
@@ -71,7 +71,7 @@ int VoxelMap::step_level(const glm::ivec3 &pos) {
     }
 
     k = BrickIndexer::shift;
-    unsigned index = SectorIndexer::to_index(pos >> k);
+    unsigned index = ChunkIndexer::to_index(pos >> k);
     if (!result->second.exists(index)) {
         return k;
     }

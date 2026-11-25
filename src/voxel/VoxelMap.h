@@ -39,7 +39,7 @@ struct BitIndexer {
 };
 
 using BrickIndexer = BitIndexer<3>;
-using SectorIndexer = BitIndexer<2>;
+using ChunkIndexer = BitIndexer<2>;
 
 static_assert(BrickIndexer::to_index(-17, 0, 0) == 7);
 static_assert(BrickIndexer::to_index(-16, 0, 0) == 0);
@@ -60,12 +60,11 @@ public:
 
 void create_solid_mask(const Brick& brick, std::uint32_t dest[Brick::num_voxels / 32]);
 
-// Sector is a 4x4x4 set of Bricks
-class Sector {
+class Chunk {
 public:
-    Sector();
+    Chunk();
 
-    static constexpr std::uint8_t num_bricks = SectorIndexer::max_volume;
+    static constexpr std::uint8_t num_bricks = ChunkIndexer::max_volume;
     Brick &at(std::uint8_t index);
     bool exists(std::uint8_t index);
 
@@ -86,7 +85,7 @@ public:
     VoxelMap(TerrainGenerator& generator);
 
     // TODO: Modify every at to [] for better performance.
-    Sector &get_sector(const glm::ivec3 &pos);
+    Chunk &get_sector(const glm::ivec3 &pos);
     Brick &get_brick(const glm::ivec3 &pos);
     Voxel get(const glm::ivec3 &pos);
 
@@ -110,8 +109,8 @@ public:
         glm::ivec3 brick_min = min >> BrickIndexer::shift;
         glm::ivec3 brick_max = max >> BrickIndexer::shift;
 
-        glm::ivec3 sector_min = brick_min >> SectorIndexer::shift;
-        glm::ivec3 sector_max = brick_max >> SectorIndexer::shift;
+        glm::ivec3 sector_min = brick_min >> ChunkIndexer::shift;
+        glm::ivec3 sector_max = brick_max >> ChunkIndexer::shift;
 
 
         for (int sector_z = sector_min.z; sector_z <= sector_max.z; sector_z++) {
@@ -119,8 +118,8 @@ public:
                 for (int sector_x = sector_min.x; sector_x <= sector_max.x; sector_x++) {
                     glm::ivec3 sector_pos = {sector_x, sector_y, sector_z};
 
-                    glm::ivec3 sector_brick_min = sector_pos << SectorIndexer::shift;
-                    glm::ivec3 sector_brick_max = sector_brick_min | SectorIndexer::mask;
+                    glm::ivec3 sector_brick_min = sector_pos << ChunkIndexer::shift;
+                    glm::ivec3 sector_brick_max = sector_brick_min | ChunkIndexer::mask;
 
                     const glm::ivec3 first_brick{
                         std::max(brick_min.x, sector_brick_min.x),
@@ -134,7 +133,7 @@ public:
                         std::min(brick_max.z, sector_brick_max.z),
                     };
 
-                    Sector& sector = get_sector(sector_pos);
+                    Chunk& sector = get_sector(sector_pos);
 
                     for (int brick_z = first_brick.z; brick_z <= last_brick.z; brick_z++) {
                         for (int brick_y = first_brick.y; brick_y <= last_brick.y; brick_y++) {
@@ -157,7 +156,7 @@ public:
                                     std::min(max.z, voxel_max.z)
                                 };
 
-                                Brick& brick = sector.at(SectorIndexer::to_index(brick_pos));;
+                                Brick& brick = sector.at(ChunkIndexer::to_index(brick_pos));;
 
                                 for (int z = first_voxel.z; z <= last_voxel.z; z++) {
                                     for (int y = first_voxel.y; y <= last_voxel.y; y++) {
@@ -183,7 +182,7 @@ private:
         Brick& brick;
     };
 
-    std::unordered_map<glm::ivec3, Sector> sectors;
+    std::unordered_map<glm::ivec3, Chunk> sectors;
     std::vector<DirtyBrick> dirty_bricks;
 
     TerrainGenerator& terrain_generator;
