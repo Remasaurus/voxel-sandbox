@@ -13,6 +13,8 @@ public:
 
     void resize(unsigned width, unsigned height);
 
+    void bind();
+
     Texture& as_texture() { return color_texture; }
 
     glm::uvec2 size() { return { width_, height_ }; }

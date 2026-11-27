@@ -24,6 +24,10 @@ Framebuffer& Framebuffer::operator=(Framebuffer && rhs) {
 
 Framebuffer::Framebuffer() {}
 
+void Framebuffer::bind() {
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+}
+
 Framebuffer::Framebuffer(unsigned width, unsigned height) {
     resize(width, height);
 }
